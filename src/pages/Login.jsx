@@ -15,11 +15,11 @@ import naverLoginButton from "../assets/naver_login_button.png"
 function Login() {
 
   const URL = 'https://caring-sadly-marmoset.ngrok-free.app'
-  const navigate = useNavigate(); // useNavigate 훅 사용
 
   const handleButtonClick = (provider) => {
-    // window.location.href를 사용해 직접 리다이렉션
-    window.location.href = `${URL}/auth/login/${provider}`;
+    // 현재 페이지를 리디렉션할 URL로 사용하거나, 다른 원하는 URL을 사용
+    const redirectUrl = encodeURIComponent(window.location.origin + '/'); 
+    window.location.href = `${URL}/auth/login/${provider}?redirect_url=${redirectUrl}`;
   };
 
   return (
