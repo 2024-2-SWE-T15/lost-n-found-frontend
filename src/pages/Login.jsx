@@ -24,7 +24,7 @@ function Login() {
 
   return (
     <Wrapper>
-      <Image src={loginImage} alt=" " style={{paddingLeft: "50px"}}/>
+      <Image src={loginImage} alt=" " />
       <Spacer size={12} />
       <Header>찾을 수 있을 지도</Header>
       <Spacer size={12} />
