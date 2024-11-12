@@ -1,55 +1,69 @@
 import { Map, MapMarker, useMap } from "react-kakao-maps-sdk";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useKakaoLoader } from "../hooks/useKakaoLoader";
 import styled from "styled-components";
+import axios from 'axios';
 
-export default function KakaoMap() {
+export default function KakaoMap({ onOpen }) {
   const isLoaded = useKakaoLoader();
   const [isVisibleId, setIsVisibleId] = useState(-1);
+  const [markers, setMarkers] = useState([{
+    id: 0,
+    content: <div style={{ color: "#000" }}>학술정보관</div>,
+    latlng: { lat: 37.293976, lng: 126.975059 },
+  }]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [nextId, setNextId] = useState(1);
+  const [zoomLevel, setZoomLevel] = useState(3);
+  const [mapCenter, setMapCenter] = useState({
+    lat: 37.293976,
+    lng: 126.975059,
+  });
+  const [markerElements, setMarkerElements] = useState([]);
+  
 
-  const data = [
-    {
-      id: 0,
-      content: <div style={{ color: "#000" }}>학술정보관</div>,
-      latlng: { lat: 37.293976, lng: 126.975059 },
-    },
-    {
-      id: 1,
-      content: <div style={{ color: "#000" }}>2공학관</div>,
-      latlng: { lat: 37.295131, lng: 126.976891 },
-    },
-    {
-      id: 3,
-      content: <div style={{ color: "#000" }}>1공학관</div>,
-      latlng: { lat: 37.293971, lng: 126.976659 },
-    },
-    {
-      id: 4,
-      content: <div style={{ color: "#000" }}>약학관</div>,
-      latlng: { lat: 37.292081, lng: 126.976643 },
-    },
-    {
-      id: 5,
-      content: <div style={{ color: "#000" }}>정문</div>,
-      latlng: { lat: 37.290753, lng: 126.974101 },
-    },
-    {
-      id: 6,
-      content: <div style={{ color: "#000" }}>후문</div>,
-      latlng: { lat: 37.296352, lng: 126.970610 },
-    },
-    {
-      id: 7,
-      content: <div style={{ color: "#000" }}>북문</div>,
-      latlng: { lat: 37.296330, lng: 126.976435 },
-    },
-  ];
+  useEffect(() => {
+    try {
+      // 여기서 마커 데이터 가져오기
+      const newMarker = {
+        id: nextId,
+        content: <div style={{ color: "#000" }}>새로운 마커 {nextId}</div>,
+        latlng: {
+          lat: mapCenter.lat + (Math.random() * 0.001 - 0.0005),
+          lng: mapCenter.lng + (Math.random() * 0.001 - 0.0005)
+        }
+      };
+      setMarkers( [newMarker]);
+      console.log('드래그 후 새로운 중심좌표:', mapCenter);
+      console.log('드래그 후 새로운 level:', zoomLevel);
+    } catch (error) {
+      console.error('마커 데이터를 불러오는데 실패했습니다:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [mapCenter, zoomLevel]);
+
+  useEffect(() => {
+    console.log('markers 변경');
+    const newMarkerElements = markers.map((marker) => (
+      <EventMarkerContainer
+        key={marker.id}
+        position={marker.latlng}
+        content={marker.content}
+        id={marker.id}
+      />
+    ));
+    setMarkerElements(newMarkerElements);
+  }, [markers]);
+
+  
 
   const EventMarkerContainer = ({ position, content, id }) => {
     const map = useMap();
-
+    
     function MarkerClickFunc(position) {
       setIsVisibleId(id);
+      onOpen();
       setTimeout(() => {
         map.panTo(position, { animate: { cancelable: false } });
       }, 10);
@@ -67,7 +81,7 @@ export default function KakaoMap() {
     );
   };
 
-  if (!isLoaded) {
+  if (!isLoaded || isLoading) {
     return (
       <LoadingContainer>
         <div>지도를 불러오는 중...</div>
@@ -78,25 +92,33 @@ export default function KakaoMap() {
   return (
     <MapContainer>
       <Map
-        center={{
-          lat: 37.293976,
-          lng: 126.975059,
-        }}
+        center={ mapCenter}
         style={{
           width: "100%",
           height: "100%",
         }}
-        level={3}
+        level={zoomLevel}
         onClick={() => setIsVisibleId(-1)}
+        onDragEnd={(map) => {
+          const latlng = map.getCenter();
+          const level = map.getLevel()
+          const newCenter = {
+            lat: latlng.getLat(),
+            lng: latlng.getLng()
+          };
+          
+         
+          
+          
+          setNextId(prev => prev + 1);
+          setZoomLevel(level);
+          setMapCenter(newCenter);
+        }}
+        onZoomChanged={(map) => {
+          setZoomLevel(map.getLevel());
+        }}
       >
-        {data.map((value) => (
-          <EventMarkerContainer
-            key={`EventMarkerContainer-${value.latlng.lat}-${value.latlng.lng}`}
-            position={value.latlng}
-            content={value.content}
-            id={value.id}
-          />
-        ))}
+        {markerElements}
       </Map>
     </MapContainer>
   );

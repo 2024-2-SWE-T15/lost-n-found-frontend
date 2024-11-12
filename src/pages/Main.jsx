@@ -45,7 +45,7 @@ function Main() {
       </TopBar>
       <ContentContainer>
         <MapContainer>
-          <KakaoMap />
+          <KakaoMap onOpen={() => setIsSidebarOpen(true)} />
         </MapContainer>
         <Sidebar 
           isOpen={isSidebarOpen} 
