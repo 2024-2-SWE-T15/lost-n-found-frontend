@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 
 let last_open = false;
 
-const Sidebar = ({ markerId, children, isOpen, onToggle }) => {
+const Sidebar = ({ markerId, children, isSidebarOpen, onSidebarToggle }) => {
   const [isResizing, setIsResizing] = useState(false);
   
   useEffect(() => {
@@ -22,13 +22,13 @@ const Sidebar = ({ markerId, children, isOpen, onToggle }) => {
   }, []);
 
   return (
-    <SidebarContainer $isOpen={isOpen} $isResizing={isResizing}>
+    <SidebarContainer $isOpen={isSidebarOpen} $isResizing={isResizing}>
       <Content>
         {children}
       </Content>
       <MenuButton 
-          onClick={onToggle}
-          $isOpen={isOpen}
+          onClick={onSidebarToggle}
+          $isOpen={isSidebarOpen}
       />
     </SidebarContainer>
   );

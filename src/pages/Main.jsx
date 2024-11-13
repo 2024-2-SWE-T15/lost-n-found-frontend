@@ -49,13 +49,14 @@ function Main() {
       <ContentContainer>
         <MapContainer>
         <KakaoMap 
+        isSidebarOpen={isSidebarOpen}
           onMarkerClick={HandleMarkerClick}
         />
         </MapContainer>
         <Sidebar 
           markerId={selectedMarkerId}
-          isOpen={isSidebarOpen}
-          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+          isSidebarOpen={isSidebarOpen}
+          onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         />
       </ContentContainer>
     </Container>
