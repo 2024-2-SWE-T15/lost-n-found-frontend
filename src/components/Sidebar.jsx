@@ -1,22 +1,34 @@
 import styled from "styled-components";
 import PropTypes from "prop-types";
 
-const Sidebar = ({ isOpen, onClose, onOpen }) => {
+const Sidebar = ({ isSidebarOpen, sidebarClose, sidebarOpen, markerId }) => {
   return (
-    <SidebarContainer $isOpen={isOpen}>
+    <SidebarContainer $isOpen={isSidebarOpen}>
       <Content>
         <SearchInput 
           type="text" 
-          placeholder="마커를 눌러서나 검색해주세요"
+          placeholder=" 검색해주세요"
         />
+        {markerId && (
+          <MarkerInfo>
+            선택된 마커 ID: {markerId}
+          </MarkerInfo>
+        )}
       </Content>
       <MenuButton 
-        onClick={() => isOpen ? onClose() : onOpen()}
+          onClick={() => isSidebarOpen ? sidebarClose() : sidebarOpen()}
       />
     </SidebarContainer>
   );
 };
 
+const MarkerInfo = styled.div`
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  font-size: 14px;
+`;
 const SidebarContainer = styled.div`
   position: absolute;
   top: 0;

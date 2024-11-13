@@ -7,26 +7,13 @@ import KakaoMap from "../components/Map";
 function Main() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const profileRef = useRef(null);
+  const [selectedMarkerId, setSelectedMarkerId] = useState(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (profileRef.current && !profileRef.current.contains(event.target)) {
-        setIsProfileMenuOpen(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   return (
     <Container>
       <TopBar>
-        <ProfileContainer ref={profileRef}>
+        <ProfileContainer>
           <ProfileButton onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}>
             <img src="/user-icon.svg" alt="프로필" />
           </ProfileButton>
@@ -45,12 +32,17 @@ function Main() {
       </TopBar>
       <ContentContainer>
         <MapContainer>
-          <KakaoMap onOpen={() => setIsSidebarOpen(true)} />
+        <KakaoMap 
+          sidebarOpen={() => setIsSidebarOpen(true)}   
+          sidebarClose={() => setIsSidebarOpen(false)}
+          onMarkerClick={(id) => setSelectedMarkerId(id)}
+        />
         </MapContainer>
         <Sidebar 
-          isOpen={isSidebarOpen} 
-          onClose={() => setIsSidebarOpen(false)}
-          onOpen={() => setIsSidebarOpen(true)}
+          isSidebarOpen={isSidebarOpen}  
+          sidebarClose={() => setIsSidebarOpen(false)}
+          sidebarOpen={() => setIsSidebarOpen(true)}
+          markerId={selectedMarkerId}
         />
       </ContentContainer>
     </Container>

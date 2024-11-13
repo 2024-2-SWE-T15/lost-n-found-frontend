@@ -4,36 +4,75 @@ import { useKakaoLoader } from "../hooks/useKakaoLoader";
 import styled from "styled-components";
 import axios from 'axios';
 
-export default function KakaoMap({ onOpen }) {
+export default function KakaoMap({ sidebarOpen,sidebarClose, onMarkerClick }) {
   const isLoaded = useKakaoLoader();
-  const [isVisibleId, setIsVisibleId] = useState(-1);
-  const [markers, setMarkers] = useState([{
-    id: 0,
-    content: <div style={{ color: "#000" }}>학술정보관</div>,
-    latlng: { lat: 37.293976, lng: 126.975059 },
-  }]);
+  const [isVisibleId, setIsVisibleId] = useState("");
+  const [markers, setMarkers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [nextId, setNextId] = useState(1);
   const [zoomLevel, setZoomLevel] = useState(3);
   const [mapCenter, setMapCenter] = useState({
-    lat: 37.293976,
-    lng: 126.975059,
+    lat: 37.293976, lng: 126.975059
   });
-  const [markerElements, setMarkerElements] = useState([]);
-  
 
+  const fetchMarkers = async () => {
+    try {
+      const response = await axios.get(`https://caring-sadly-marmoset.ngrok-free.app/marker/`, {
+        headers: {
+          "ngrok-skip-browser-warning": true,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        withCredentials: true,
+        params: {
+          lng: 92,
+          lat: -42,
+          distance: 100000
+        }
+      }).then(response => {
+        console.log(response);
+        if (response.data) {
+          console.log(response.data);
+          let diff = 0;
+          const transformedMarkers = response.data.map(marker => ({
+            id: marker.id,
+            content: <div style={{ color: "#000" }}>{ marker.id}</div>, //테스트용
+            latlng: { 
+              lat: marker.coordinates[1] - 55.62786535,  //위도 (테스트용)
+              lng: marker.coordinates[0] + 169.17110113 + 0.0005*(diff++), //경도 (테스트용)
+            },
+            isLost: marker.is_lost,
+            matchRank: marker.match_rank,
+            description: marker.description,
+            createTime: marker.create_time,
+            updateTime: marker.update_time,
+            userId: marker.user_id,
+            valid: marker.valid
+          }));
+          setMarkers(transformedMarkers);
+
+          console.log('markers 변경');
+          console.log(markers);
+       
+        }
+      });
+      
+     
+    } catch (error) {
+      console.error('마커 데이터를 불러오는데 실패했습니다:', error);
+      setMarkers([]);
+    }
+  };
+
+
+  //페이지 로드시 마커 데이터 가져오기
+  useEffect(() => {
+    fetchMarkers();
+  }, []);
+
+  //드래그, 줌 했을경우 마커 데이터 가져오기
   useEffect(() => {
     try {
-      // 여기서 마커 데이터 가져오기
-      const newMarker = {
-        id: nextId,
-        content: <div style={{ color: "#000" }}>새로운 마커 {nextId}</div>,
-        latlng: {
-          lat: mapCenter.lat + (Math.random() * 0.001 - 0.0005),
-          lng: mapCenter.lng + (Math.random() * 0.001 - 0.0005)
-        }
-      };
-      setMarkers( [newMarker]);
+      fetchMarkers();
       console.log('드래그 후 새로운 중심좌표:', mapCenter);
       console.log('드래그 후 새로운 level:', zoomLevel);
     } catch (error) {
@@ -43,27 +82,20 @@ export default function KakaoMap({ onOpen }) {
     }
   }, [mapCenter, zoomLevel]);
 
-  useEffect(() => {
-    console.log('markers 변경');
-    const newMarkerElements = markers.map((marker) => (
-      <EventMarkerContainer
-        key={marker.id}
-        position={marker.latlng}
-        content={marker.content}
-        id={marker.id}
-      />
-    ));
-    setMarkerElements(newMarkerElements);
-  }, [markers]);
+  
+
+
 
   
 
   const EventMarkerContainer = ({ position, content, id }) => {
     const map = useMap();
     
-    function MarkerClickFunc(position) {
+    function MarkerClickFunc(position, id) {
       setIsVisibleId(id);
-      onOpen();
+      sidebarOpen();
+      onMarkerClick(id);
+      
       setTimeout(() => {
         map.panTo(position, { animate: { cancelable: false } });
       }, 10);
@@ -80,6 +112,10 @@ export default function KakaoMap({ onOpen }) {
       </MapMarker>
     );
   };
+
+
+
+
 
   if (!isLoaded || isLoading) {
     return (
@@ -98,7 +134,12 @@ export default function KakaoMap({ onOpen }) {
           height: "100%",
         }}
         level={zoomLevel}
-        onClick={() => setIsVisibleId(-1)}
+        onClick={() => {
+          setIsVisibleId("");
+          onMarkerClick(null);
+          sidebarClose();
+
+        } }
         onDragEnd={(map) => {
           const latlng = map.getCenter();
           const level = map.getLevel()
@@ -107,10 +148,6 @@ export default function KakaoMap({ onOpen }) {
             lng: latlng.getLng()
           };
           
-         
-          
-          
-          setNextId(prev => prev + 1);
           setZoomLevel(level);
           setMapCenter(newCenter);
         }}
@@ -118,7 +155,14 @@ export default function KakaoMap({ onOpen }) {
           setZoomLevel(map.getLevel());
         }}
       >
-        {markerElements}
+        {markers.map((value) => (
+          <EventMarkerContainer
+            key={value.id}
+            position={value.latlng}
+            content={value.content}
+            id={value.id}
+          />
+        ))}
       </Map>
     </MapContainer>
   );
