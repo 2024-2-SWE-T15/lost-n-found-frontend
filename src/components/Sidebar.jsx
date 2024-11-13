@@ -1,5 +1,4 @@
 import styled from "styled-components";
-import PropTypes from "prop-types";
 
 const Sidebar = ({ isSidebarOpen, sidebarClose, sidebarOpen, markerId }) => {
   return (
@@ -88,10 +87,5 @@ const MenuButton = styled.button`
   }
 `;
 
-Sidebar.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onOpen: PropTypes.func.isRequired
-};
 
 export default Sidebar;
