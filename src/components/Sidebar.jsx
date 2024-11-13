@@ -1,42 +1,49 @@
 import styled from "styled-components";
+import { useState, useEffect } from "react";
 
-const Sidebar = ({ isSidebarOpen, sidebarClose, sidebarOpen, markerId }) => {
+let last_open = false;
+
+const Sidebar = ({ markerId, children, isOpen, onToggle }) => {
+  const [isResizing, setIsResizing] = useState(false);
+  
+  useEffect(() => {
+    let resizeTimer;
+    
+    const handleResize = () => {
+      setIsResizing(true);
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        setIsResizing(false);
+      }, 100);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
-    <SidebarContainer $isOpen={isSidebarOpen}>
+    <SidebarContainer $isOpen={isOpen} $isResizing={isResizing}>
       <Content>
-        <SearchInput 
-          type="text" 
-          placeholder=" 검색해주세요"
-        />
-        {markerId && (
-          <MarkerInfo>
-            선택된 마커 ID: {markerId}
-          </MarkerInfo>
-        )}
+        {children}
       </Content>
       <MenuButton 
-          onClick={() => isSidebarOpen ? sidebarClose() : sidebarOpen()}
+          onClick={onToggle}
+          $isOpen={isOpen}
       />
     </SidebarContainer>
   );
 };
 
-const MarkerInfo = styled.div`
-  margin-top: 20px;
-  padding: 15px;
-  background-color: #f5f5f5;
-  border-radius: 8px;
-  font-size: 14px;
-`;
+
 const SidebarContainer = styled.div`
   position: absolute;
   top: 0;
-  left: ${({ $isOpen }) => $isOpen ? '0' : '-30vw'};
+  left: ${({ $isOpen }) => $isOpen ? '0' : `-30vw`};
   width: 30vw;
   height: 100%;
   background: white;
   box-shadow: 2px 0 8px rgba(0,0,0,0.1);
-  transition: left 0.3s ease-in-out;
+  transition: ${({ $isResizing }) => $isResizing ? 'none' : 'left 0.3s ease-in-out'};
   z-index: 900;
 `;
 
@@ -44,20 +51,6 @@ const Content = styled.div`
   padding: 20px;
 `;
 
-const SearchInput = styled.input`
-  width: 100%;
-  height: 40px;
-  padding: 0 15px;
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  outline: none;
-  font-size: 14px;
-  margin-top: 20px;
-  
-  &::placeholder {
-    color: #999;
-  }
-`;
 
 const MenuButton = styled.button`
   position: absolute;
@@ -80,6 +73,7 @@ const MenuButton = styled.button`
     border-top: 12px solid transparent;
     border-bottom: 12px solid transparent;
     border-left: 12px solid #666;
+    transform: rotate(${({ $isOpen }) => $isOpen ? '180deg' : '0'});
   }
 
   &:hover {

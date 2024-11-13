@@ -5,10 +5,26 @@ import Sidebar from "../components/Sidebar";
 import KakaoMap from "../components/Map";
 
 function Main() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const navigate = useNavigate();
+
+  function HandleMarkerClick(id)   {
+    if(id === null)
+    {
+      setIsSidebarOpen(false);
+    }
+    else
+    {
+      setIsSidebarOpen(true);
+    }
+
+    setSelectedMarkerId(id);
+  }
+
+
 
   return (
     <Container>
@@ -33,16 +49,13 @@ function Main() {
       <ContentContainer>
         <MapContainer>
         <KakaoMap 
-          sidebarOpen={() => setIsSidebarOpen(true)}   
-          sidebarClose={() => setIsSidebarOpen(false)}
-          onMarkerClick={(id) => setSelectedMarkerId(id)}
+          onMarkerClick={HandleMarkerClick}
         />
         </MapContainer>
         <Sidebar 
-          isSidebarOpen={isSidebarOpen}  
-          sidebarClose={() => setIsSidebarOpen(false)}
-          sidebarOpen={() => setIsSidebarOpen(true)}
           markerId={selectedMarkerId}
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         />
       </ContentContainer>
     </Container>
@@ -87,8 +100,8 @@ const ProfileButton = styled.button`
   justify-content: center;
   
   img {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
   }
 `;

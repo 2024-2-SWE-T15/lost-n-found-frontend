@@ -3,16 +3,18 @@ import { useState, useEffect, useMemo } from "react";
 import { useKakaoLoader } from "../hooks/useKakaoLoader";
 import styled from "styled-components";
 import axios from 'axios';
+import { transformMarkerData } from './api';
 
-export default function KakaoMap({ sidebarOpen,sidebarClose, onMarkerClick }) {
-  const isLoaded = useKakaoLoader();
-  const [isVisibleId, setIsVisibleId] = useState("");
+export default function KakaoMap({  onMarkerClick }) {
+  const isSdkLoaded = useKakaoLoader();
+  const [selectedMarkerId, setSelectedMarkerId] = useState("");
   const [markers, setMarkers] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isMarkerLoaded, setisMarkerLoaded] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(3);
   const [mapCenter, setMapCenter] = useState({
     lat: 37.293976, lng: 126.975059
   });
+
 
   const fetchMarkers = async () => {
     try {
@@ -32,27 +34,11 @@ export default function KakaoMap({ sidebarOpen,sidebarClose, onMarkerClick }) {
         console.log(response);
         if (response.data) {
           console.log(response.data);
-          let diff = 0;
-          const transformedMarkers = response.data.map(marker => ({
-            id: marker.id,
-            content: <div style={{ color: "#000" }}>{ marker.id}</div>, //테스트용
-            latlng: { 
-              lat: marker.coordinates[1] - 55.62786535,  //위도 (테스트용)
-              lng: marker.coordinates[0] + 169.17110113 + 0.0005*(diff++), //경도 (테스트용)
-            },
-            isLost: marker.is_lost,
-            matchRank: marker.match_rank,
-            description: marker.description,
-            createTime: marker.create_time,
-            updateTime: marker.update_time,
-            userId: marker.user_id,
-            valid: marker.valid
-          }));
+          const transformedMarkers = transformMarkerData(response.data);
           setMarkers(transformedMarkers);
 
           console.log('markers 변경');
           console.log(markers);
-       
         }
       });
       
@@ -64,21 +50,17 @@ export default function KakaoMap({ sidebarOpen,sidebarClose, onMarkerClick }) {
   };
 
 
-  //페이지 로드시 마커 데이터 가져오기
-  useEffect(() => {
-    fetchMarkers();
-  }, []);
-
   //드래그, 줌 했을경우 마커 데이터 가져오기
   useEffect(() => {
     try {
+      setisMarkerLoaded(false);
       fetchMarkers();
       console.log('드래그 후 새로운 중심좌표:', mapCenter);
       console.log('드래그 후 새로운 level:', zoomLevel);
     } catch (error) {
       console.error('마커 데이터를 불러오는데 실패했습니다:', error);
     } finally {
-      setIsLoading(false);
+      setisMarkerLoaded(true);
     }
   }, [mapCenter, zoomLevel]);
 
@@ -92,12 +74,16 @@ export default function KakaoMap({ sidebarOpen,sidebarClose, onMarkerClick }) {
     const map = useMap();
     
     function MarkerClickFunc(position, id) {
-      setIsVisibleId(id);
-      sidebarOpen();
+      setSelectedMarkerId(id);
       onMarkerClick(id);
       
       setTimeout(() => {
-        map.panTo(position, { animate: { cancelable: false } });
+        const newPosition = new kakao.maps.LatLng(
+          position.getLat(),
+          position.getLng()
+        );
+        
+        map.panTo(newPosition);
       }, 10);
     }
 
@@ -108,7 +94,7 @@ export default function KakaoMap({ sidebarOpen,sidebarClose, onMarkerClick }) {
           MarkerClickFunc(marker.getPosition(), id);
         }}
       >
-        {isVisibleId === id && content}
+        {selectedMarkerId === id && content}
       </MapMarker>
     );
   };
@@ -117,7 +103,7 @@ export default function KakaoMap({ sidebarOpen,sidebarClose, onMarkerClick }) {
 
 
 
-  if (!isLoaded || isLoading) {
+  if (!isSdkLoaded || !isMarkerLoaded) {
     return (
       <LoadingContainer>
         <div>지도를 불러오는 중...</div>
@@ -135,9 +121,8 @@ export default function KakaoMap({ sidebarOpen,sidebarClose, onMarkerClick }) {
         }}
         level={zoomLevel}
         onClick={() => {
-          setIsVisibleId("");
+          setSelectedMarkerId("");
           onMarkerClick(null);
-          sidebarClose();
 
         } }
         onDragEnd={(map) => {
