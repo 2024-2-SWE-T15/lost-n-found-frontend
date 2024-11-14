@@ -26,8 +26,8 @@ export default function KakaoMap({  onMarkerClick }) {
         },
         withCredentials: true,
         params: {
-          lng: 92,
-          lat: -42,
+          lng: mapCenter.lng,
+          lat: mapCenter.lat,
           distance: 100000
         }
       }).then(response => {
@@ -72,7 +72,7 @@ export default function KakaoMap({  onMarkerClick }) {
 
   const EventMarkerContainer = ({ position, content, id }) => {
     const map = useMap();
-    
+    console.log(position);
     function MarkerClickFunc(position, id) {
       setSelectedMarkerId(id);
       onMarkerClick(id);
