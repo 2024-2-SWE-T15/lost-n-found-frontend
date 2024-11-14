@@ -14,8 +14,8 @@ function NotFound() {
 }
 
 const Wrapper = styled(CenteredColumn)`
-  width: 100vw;
-  height: 100dvh;
+  width: 100%;
+  height: 100%;
 `;
 
 const Header = styled.h1`

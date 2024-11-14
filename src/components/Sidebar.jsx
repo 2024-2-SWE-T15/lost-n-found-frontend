@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 
 import styled from "styled-components";
 
+export const SIDEBAR_WIDTH_PX = 400;
+
 const Sidebar = ({ children, isSidebarOpen, onSidebarToggle }) => {
   const [isResizing, setIsResizing] = useState(false);
 
@@ -31,8 +33,8 @@ const Sidebar = ({ children, isSidebarOpen, onSidebarToggle }) => {
 const SidebarContainer = styled.div`
   position: absolute;
   top: 0;
-  left: ${({ $isOpen }) => ($isOpen ? "0" : `-30vw`)};
-  width: 30vw;
+  left: ${({ $isOpen }) => ($isOpen ? "0" : `-${SIDEBAR_WIDTH_PX}px`)};
+  width: ${SIDEBAR_WIDTH_PX}px;
   height: 100%;
   background: white;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
