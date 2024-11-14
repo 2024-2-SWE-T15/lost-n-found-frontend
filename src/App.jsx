@@ -16,9 +16,13 @@ const GlobalStyle = createGlobalStyle`
     box-sizing: border-box;
   }
 
-  body {
+  #root {
     background-color: white;
     color: #1e1e1e;
+    width: 100vw;
+    height: 100vh;
+    min-width: 800px;
+    min-height: 600px;
   }
 `;
 
