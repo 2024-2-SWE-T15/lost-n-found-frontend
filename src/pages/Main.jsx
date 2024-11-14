@@ -1,60 +1,48 @@
-import { useState, useEffect, useRef } from "react";
+import KakaoMap from "../components/Map";
+import Sidebar from "../components/Sidebar";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../components/Sidebar";
-import KakaoMap from "../components/Map";
+import { useState } from "react";
 
 function Main() {
-  
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const navigate = useNavigate();
 
-  function HandleMarkerClick(id)   {
-    if(id === null)
-    {
+  function HandleMarkerClick(id) {
+    if (id === null) {
       setIsSidebarOpen(false);
-    }
-    else
-    {
+    } else {
       setIsSidebarOpen(true);
     }
 
     setSelectedMarkerId(id);
   }
 
-
-
   return (
     <Container>
       <TopBar>
         <ProfileContainer>
-          <ProfileButton onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}>
+          <ProfileButton
+            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+          >
             <img src="/user-icon.svg" alt="프로필" />
           </ProfileButton>
           {isProfileMenuOpen && (
             <ProfileMenu>
-              <MenuItem onClick={() => navigate('/my')}>
-                내 정보
-              </MenuItem>
+              <MenuItem onClick={() => navigate("/my")}>내 정보</MenuItem>
               <MenuDivider />
-              <MenuItem onClick={() => navigate('/login')}>
-                로그아웃
-              </MenuItem>
+              <MenuItem onClick={() => navigate("/login")}>로그아웃</MenuItem>
             </ProfileMenu>
           )}
         </ProfileContainer>
       </TopBar>
       <ContentContainer>
         <MapContainer>
-        <KakaoMap 
-        isSidebarOpen={isSidebarOpen}
-          onMarkerClick={HandleMarkerClick}
-        />
+          <KakaoMap onMarkerClick={HandleMarkerClick} />
         </MapContainer>
-        <Sidebar 
-          markerId={selectedMarkerId}
+        <Sidebar
           isSidebarOpen={isSidebarOpen}
           onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         />
@@ -73,7 +61,7 @@ const Container = styled.div`
 const TopBar = styled.div`
   height: 60px;
   background: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 0;
   display: flex;
   align-items: center;
@@ -99,7 +87,7 @@ const ProfileButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   img {
     width: 32px;
     height: 32px;
@@ -115,7 +103,7 @@ const ProfileMenu = styled.div`
   min-width: 160px;
   border: 1px solid #eee;
   border-top: none;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 999;
 `;
 

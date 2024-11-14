@@ -1,74 +1,48 @@
 import { Map, MapMarker, useMap } from "react-kakao-maps-sdk";
-import { useState, useEffect, useMemo } from "react";
-import { useKakaoLoader } from "../hooks/useKakaoLoader";
-import styled from "styled-components";
-import axios from 'axios';
-import { transformMarkerData } from './api';
+import { useEffect, useState } from "react";
 
-export default function KakaoMap({  onMarkerClick }) {
+import { fetchMarkers } from "../api";
+import styled from "styled-components";
+import { useKakaoLoader } from "../hooks/useKakaoLoader";
+
+export default function KakaoMap({ onMarkerClick }) {
   const isSdkLoaded = useKakaoLoader();
   const [selectedMarkerId, setSelectedMarkerId] = useState("");
   const [markers, setMarkers] = useState([]);
-  const [isMarkerLoaded, setisMarkerLoaded] = useState(false);
+  const [isMarkerLoaded, setIsMarkerLoaded] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(3);
   const [mapCenter, setMapCenter] = useState({
-    lat: 37.293976, lng: 126.975059
+    lat: 37.293976,
+    lng: 126.975059,
   });
 
-
-  const fetchMarkers = async () => {
+  const updateMarkers = async () => {
     try {
-      const response = await axios.get(`https://caring-sadly-marmoset.ngrok-free.app/marker/`, {
-        headers: {
-          "ngrok-skip-browser-warning": true,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        withCredentials: true,
-        params: {
-          lng: mapCenter.lng,
-          lat: mapCenter.lat,
-          distance: 100000
-        }
-      }).then(response => {
-        console.log(response);
-        if (response.data) {
-          console.log(response.data);
-          const transformedMarkers = transformMarkerData(response.data);
-          setMarkers(transformedMarkers);
-
-          console.log('markers 변경');
-          console.log(markers);
-        }
-      });
-      
-     
+      const markers = await fetchMarkers(mapCenter.lat, mapCenter.lng, 10000);
+      setMarkers(
+        markers.map((marker) => ({
+          ...marker,
+          content: <div style={{ color: "#000" }}>{marker.title}</div>,
+        }))
+      );
     } catch (error) {
-      console.error('마커 데이터를 불러오는데 실패했습니다:', error);
+      console.error("마커 데이터를 불러오는데 실패했습니다:", error);
       setMarkers([]);
     }
   };
 
-
   //드래그, 줌 했을경우 마커 데이터 가져오기
   useEffect(() => {
     try {
-      setisMarkerLoaded(false);
-      fetchMarkers();
-      console.log('드래그 후 새로운 중심좌표:', mapCenter);
-      console.log('드래그 후 새로운 level:', zoomLevel);
+      updateMarkers();
+      console.log("드래그 후 새로운 중심좌표:", mapCenter);
+      console.log("드래그 후 새로운 level:", zoomLevel);
     } catch (error) {
-      console.error('마커 데이터를 불러오는데 실패했습니다:', error);
+      console.error("마커 데이터를 불러오는데 실패했습니다:", error);
     } finally {
-      setisMarkerLoaded(true);
+      setIsMarkerLoaded(true);
     }
   }, [mapCenter, zoomLevel]);
-
-  
-
-
-
-  
 
   const EventMarkerContainer = ({ position, content, id }) => {
     const map = useMap();
@@ -76,13 +50,14 @@ export default function KakaoMap({  onMarkerClick }) {
     function MarkerClickFunc(position, id) {
       setSelectedMarkerId(id);
       onMarkerClick(id);
-      
+
       setTimeout(() => {
+        // eslint-disable-next-line no-undef
         const newPosition = new kakao.maps.LatLng(
           position.getLat(),
           position.getLng()
         );
-        
+
         map.panTo(newPosition);
       }, 10);
     }
@@ -99,10 +74,6 @@ export default function KakaoMap({  onMarkerClick }) {
     );
   };
 
-
-
-
-
   if (!isSdkLoaded || !isMarkerLoaded) {
     return (
       <LoadingContainer>
@@ -114,7 +85,7 @@ export default function KakaoMap({  onMarkerClick }) {
   return (
     <MapContainer>
       <Map
-        center={ mapCenter}
+        center={mapCenter}
         style={{
           width: "100%",
           height: "100%",
@@ -123,16 +94,15 @@ export default function KakaoMap({  onMarkerClick }) {
         onClick={() => {
           setSelectedMarkerId("");
           onMarkerClick(null);
-
-        } }
+        }}
         onDragEnd={(map) => {
           const latlng = map.getCenter();
-          const level = map.getLevel()
+          const level = map.getLevel();
           const newCenter = {
             lat: latlng.getLat(),
-            lng: latlng.getLng()
+            lng: latlng.getLng(),
           };
-          
+
           setZoomLevel(level);
           setMapCenter(newCenter);
         }}
