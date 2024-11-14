@@ -1,6 +1,7 @@
 import { Map, MapMarker, useMap } from "react-kakao-maps-sdk";
 import { useEffect, useState } from "react";
 
+import { SIDEBAR_WIDTH_PX } from "./Sidebar";
 import { fetchMarkers } from "../api";
 import styled from "styled-components";
 import { useKakaoLoader } from "../hooks/useKakaoLoader";
@@ -46,16 +47,32 @@ export default function KakaoMap({ onMarkerClick }) {
 
   const EventMarkerContainer = ({ position, content, id }) => {
     const map = useMap();
+    const projection = map.getProjection();
     console.log(position);
     function MarkerClickFunc(position, id) {
       setSelectedMarkerId(id);
       onMarkerClick(id);
 
       setTimeout(() => {
+        // click event causes the sidebar to open, so we need to adjust the map center
+        const sidebarTopLeft = projection.coordsFromContainerPoint(
+          // eslint-disable-next-line no-undef
+          new kakao.maps.Point(0, 0)
+        );
+        const sidebarTopRight = projection.coordsFromContainerPoint(
+          // eslint-disable-next-line no-undef
+          new kakao.maps.Point(SIDEBAR_WIDTH_PX, 0)
+        );
+
+        const latOffset =
+          (sidebarTopLeft.getLat() - sidebarTopRight.getLat()) / 2;
+        const lngOffset =
+          (sidebarTopLeft.getLng() - sidebarTopRight.getLng()) / 2;
+
         // eslint-disable-next-line no-undef
         const newPosition = new kakao.maps.LatLng(
-          position.getLat(),
-          position.getLng()
+          position.getLat() + latOffset,
+          position.getLng() + lngOffset
         );
 
         map.panTo(newPosition);
