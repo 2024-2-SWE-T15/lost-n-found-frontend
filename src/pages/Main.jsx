@@ -45,7 +45,10 @@ function Main() {
         <Sidebar
           isSidebarOpen={isSidebarOpen}
           onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        />
+        >
+          {/* TODO: put dynamic content here */}
+          {selectedMarkerId}
+        </Sidebar>
       </ContentContainer>
     </Container>
   );
@@ -134,7 +137,7 @@ const ContentContainer = styled.div`
 `;
 
 const MapContainer = styled.div`
-  width: 100%;
+  flex: 1 1 100%;
   height: 100%;
 `;
 
