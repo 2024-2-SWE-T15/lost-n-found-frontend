@@ -19,11 +19,11 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent }) {
   const [clickedPosition, setClickedPosition] = useState(null);
 
   const handleLostButtonClick = () => {
-    setSidebarContent("여기서 잃어버림");
+    setSidebarContent("lost");
   };
 
   const handleFoundButtonClick = () => {
-    setSidebarContent("여기서 찾았음");
+    setSidebarContent("found");
   };
 
   const updateMarkers = async () => {

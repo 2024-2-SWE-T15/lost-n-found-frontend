@@ -4,6 +4,9 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
+import LostForm from "../components/LostForm";
+import FoundForm from "../components/FoundForm";
+
 function Main() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
@@ -48,8 +51,14 @@ function Main() {
           isSidebarOpen={isSidebarOpen}
           onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         >
-          {/* Display dynamic content */}
-          {sidebarContent || selectedMarkerId}
+          {/* 조건부 렌더링 */}
+          {sidebarContent === "lost" ? (
+            <LostForm />
+          ) : sidebarContent === "found" ? (
+            <FoundForm />
+          ) : (
+            <p>기본 Sidebar 콘텐츠: {selectedMarkerId}</p> // 이곳에 기본값 추가 등 진행
+          )}
         </Sidebar>
       </ContentContainer>
     </Container>
