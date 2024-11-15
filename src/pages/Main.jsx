@@ -8,6 +8,7 @@ function Main() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [sidebarContent, setSidebarContent] = useState(""); // 추가된 상태
   const navigate = useNavigate();
 
   function HandleMarkerClick(id) {
@@ -40,14 +41,15 @@ function Main() {
       </TopBar>
       <ContentContainer>
         <MapContainer>
-          <KakaoMap onMarkerClick={HandleMarkerClick} />
+          {/* Pass setSidebarContent as a prop */}
+          <KakaoMap onMarkerClick={HandleMarkerClick} setSidebarContent={setSidebarContent} />
         </MapContainer>
         <Sidebar
           isSidebarOpen={isSidebarOpen}
           onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         >
-          {/* TODO: put dynamic content here */}
-          {selectedMarkerId}
+          {/* Display dynamic content */}
+          {sidebarContent || selectedMarkerId}
         </Sidebar>
       </ContentContainer>
     </Container>

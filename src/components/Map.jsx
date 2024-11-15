@@ -6,7 +6,7 @@ import { fetchMarkers } from "../api";
 import styled from "styled-components";
 import { useKakaoLoader } from "../hooks/useKakaoLoader";
 
-export default function KakaoMap({ onMarkerClick }) {
+export default function KakaoMap({ onMarkerClick, setSidebarContent }) {
   const isSdkLoaded = useKakaoLoader();
   const [selectedMarkerId, setSelectedMarkerId] = useState("");
   const [markers, setMarkers] = useState([]);
@@ -17,6 +17,14 @@ export default function KakaoMap({ onMarkerClick }) {
     lng: 126.975059,
   });
   const [clickedPosition, setClickedPosition] = useState(null);
+
+  const handleLostButtonClick = () => {
+    setSidebarContent("여기서 잃어버림");
+  };
+
+  const handleFoundButtonClick = () => {
+    setSidebarContent("여기서 찾았음");
+  };
 
   const updateMarkers = async () => {
     try {
@@ -181,7 +189,7 @@ export default function KakaoMap({ onMarkerClick }) {
                   borderRadius: "4px",
                   cursor: "pointer",
                 }}
-                onClick={() => console.log("여기서 잃어버림 버튼 클릭됨")}
+                onClick={handleLostButtonClick}
               >
                 여기서 잃어버림
               </button>
@@ -194,7 +202,7 @@ export default function KakaoMap({ onMarkerClick }) {
                   borderRadius: "4px",
                   cursor: "pointer",
                 }}
-                onClick={() => console.log("여기서 찾았음 버튼 클릭됨")}
+                onClick={handleFoundButtonClick}
               >
                 여기서 찾았음
               </button>
