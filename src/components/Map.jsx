@@ -16,6 +16,7 @@ export default function KakaoMap({ onMarkerClick }) {
     lat: 37.293976,
     lng: 126.975059,
   });
+  const [clickedPosition, setClickedPosition] = useState(null);
 
   const updateMarkers = async () => {
     try {
@@ -45,12 +46,37 @@ export default function KakaoMap({ onMarkerClick }) {
     }
   }, [mapCenter, zoomLevel]);
 
+  // 지도 클릭 시 마커 표시
+  const handleMapClick = (_target, mouseEvent) => {
+    const lat = mouseEvent.latLng.getLat();
+    const lng = mouseEvent.latLng.getLng();
+    console.log("Clicked position:", { lat, lng });
+
+    // Check for overlap with existing markers
+    const overlappingMarker = markers.find(
+      (marker) =>
+        Math.abs(marker.latlng.lat - lat) < 0.0001 &&
+        Math.abs(marker.latlng.lng - lng) < 0.0001
+    );
+
+    if (overlappingMarker) {
+      // If overlapping, select existing marker and update state
+      setSelectedMarkerId(overlappingMarker.id);
+      setClickedPosition(null); // Clear clicked position marker
+    } else {
+      // If no overlap, create new marker
+      setSelectedMarkerId(""); // Deselect any existing markers
+      setClickedPosition({ lat, lng });
+    }
+  };
+
   const EventMarkerContainer = ({ position, content, id }) => {
     const map = useMap();
     const projection = map.getProjection();
     console.log(position);
     function MarkerClickFunc(position, id) {
       setSelectedMarkerId(id);
+      setClickedPosition(null); // 기존에 생성되어있는 마커를 클릭하면 새로운 마커는 없애줍니다.
       onMarkerClick(id);
 
       setTimeout(() => {
@@ -108,10 +134,7 @@ export default function KakaoMap({ onMarkerClick }) {
           height: "100%",
         }}
         level={zoomLevel}
-        onClick={() => {
-          setSelectedMarkerId("");
-          onMarkerClick(null);
-        }}
+        onClick={handleMapClick} // Handle map click
         onDragEnd={(map) => {
           const latlng = map.getCenter();
           const level = map.getLevel();
@@ -127,6 +150,58 @@ export default function KakaoMap({ onMarkerClick }) {
           setZoomLevel(map.getLevel());
         }}
       >
+        {/* Display clicked position marker with custom red color */}
+        {clickedPosition && (
+          <MapMarker
+            position={clickedPosition}
+            image={{
+              src: "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png",
+              size: { width: 34, height: 44 },
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column", // Flexbox로 수직 정렬
+                gap: "10px", // 버튼 간의 간격
+                width: "200px",
+                padding: "10px",
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                backgroundColor: "white",
+                boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.3)",
+              }}
+            >
+              <button
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: "#4CAF50",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+                onClick={() => console.log("여기서 잃어버림 버튼 클릭됨")}
+              >
+                여기서 잃어버림
+              </button>
+              <button
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: "#ff5733",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+                onClick={() => console.log("여기서 찾았음 버튼 클릭됨")}
+              >
+                여기서 찾았음
+              </button>
+            </div>
+          </MapMarker>
+        )}
+        {/* Display existing markers */}
         {markers.map((value) => (
           <EventMarkerContainer
             key={value.id}
