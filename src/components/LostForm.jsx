@@ -50,6 +50,7 @@ function LostForm({ coordinates }) {
     try {
       const response = await fetch(`${URL}/post/lost`, {
         method: "POST",
+        credentials: 'include',
         headers: {
           "Content-Type": "application/json",
         },
