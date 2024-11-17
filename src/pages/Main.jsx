@@ -12,6 +12,7 @@ function Main() {
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [sidebarContent, setSidebarContent] = useState(""); // 추가된 상태
+  const [coordinates, setCoordinates] = useState([null, null]); // State to hold coordinates
   const navigate = useNavigate();
 
   function HandleMarkerClick(id) {
@@ -45,7 +46,11 @@ function Main() {
       <ContentContainer>
         <MapContainer>
           {/* Pass setSidebarContent as a prop */}
-          <KakaoMap onMarkerClick={HandleMarkerClick} setSidebarContent={setSidebarContent} />
+          <KakaoMap
+            onMarkerClick={HandleMarkerClick}
+            setSidebarContent={setSidebarContent}
+            setCoordinates={setCoordinates}
+          />
         </MapContainer>
         <Sidebar
           isSidebarOpen={isSidebarOpen}
@@ -53,7 +58,7 @@ function Main() {
         >
           {/* 조건부 렌더링 */}
           {sidebarContent === "lost" ? (
-            <LostForm />
+            <LostForm coordinates={coordinates} />
           ) : sidebarContent === "found" ? (
             <FoundForm />
           ) : (

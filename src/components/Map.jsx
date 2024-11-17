@@ -6,7 +6,7 @@ import { fetchMarkers } from "../api";
 import styled from "styled-components";
 import { useKakaoLoader } from "../hooks/useKakaoLoader";
 
-export default function KakaoMap({ onMarkerClick, setSidebarContent }) {
+export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordinates }) {
   const isSdkLoaded = useKakaoLoader();
   const [selectedMarkerId, setSelectedMarkerId] = useState("");
   const [markers, setMarkers] = useState([]);
@@ -59,6 +59,10 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent }) {
     const lat = mouseEvent.latLng.getLat();
     const lng = mouseEvent.latLng.getLng();
     console.log("Clicked position:", { lat, lng });
+
+    if (setCoordinates) {
+      setCoordinates([lat, lng]);
+    }
 
     // Check for overlap with existing markers
     const overlappingMarker = markers.find(

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function LostForm() {
+function LostForm({ coordinates }) {
   const [title, setTitle] = useState("");
   const [details, setDetails] = useState("");
   const [category, setCategory] = useState("");
@@ -34,7 +34,7 @@ function LostForm() {
 
     const requestBody = {
       title: title,
-      coordinates: [null, null], // 좌표값은 여기에 실제 데이터를 넣어야 합니다
+      coordinates: coordinates,
       hashtags: categoryArray,
       description: details,
       photos: base64DataArray,
