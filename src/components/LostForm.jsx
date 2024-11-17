@@ -1,24 +1,50 @@
 import React, { useState } from "react";
 
 function LostForm() {
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [base64Data, setBase64Data] = useState(null); // Base64 데이터 상태 추가
+  const [title, setTitle] = useState("");
+  const [details, setDetails] = useState("");
+  const [category, setCategory] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [base64DataArray, setBase64DataArray] = useState([]);
 
   const handleImageUpload = (event) => {
-    const file = event.target.files[0]; // 사용자가 선택한 첫 번째 파일
-    if (file) {
-      setSelectedImage(file);
-      setPreviewUrl(URL.createObjectURL(file)); // 미리보기 URL 생성
+    const files = Array.from(event.target.files);
+    const newSelectedImages = [...selectedImages];
+    const newBase64DataArray = [...base64DataArray];
 
-      // Base64 인코딩
+    files.forEach((file) => {
+      newSelectedImages.push(file);
+
       const reader = new FileReader();
       reader.onloadend = () => {
-        setBase64Data(reader.result);
-        console.log("Base64 Encoded Image:", reader.result); // Base64 데이터를 콘솔에 출력
+        newBase64DataArray.push(reader.result);
+        setBase64DataArray(newBase64DataArray);
+        console.log("Base64 Encoded Image:", reader.result);
       };
       reader.readAsDataURL(file);
-    }
+    });
+
+    setSelectedImages(newSelectedImages);
+  };
+
+  const handleFormSubmit = () => {
+    const categoryArray = category.split(" ");
+
+    const requestBody = {
+      title: title,
+      coordinates: [null, null], // 좌표값은 여기에 실제 데이터를 넣어야 합니다
+      hashtags: categoryArray,
+      description: details,
+      photos: base64DataArray,
+      personal_idlist: {
+        phone: phoneNumber,
+        birth: birthDate,
+      },
+    };
+
+    console.log("Request Body:", requestBody);
   };
 
   return (
@@ -26,21 +52,56 @@ function LostForm() {
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: "10px", // 각 요소 사이의 간격 설정
-        maxWidth: "300px", // 최대 너비 설정 (선택 사항)
-        margin: "0 auto", // 가운데 정렬 (선택 사항)
+        gap: "10px",
+        maxWidth: "300px",
+        margin: "0 auto",
       }}
     >
-      <input type="text" placeholder="제목" style={inputStyle} />
-      <input type="text" placeholder="상세" style={inputStyle} />
-      <input type="text" placeholder="카테고리" style={inputStyle} />
-      {previewUrl && (
+      <input
+        type="text"
+        placeholder="제목"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        style={inputStyle}
+      />
+      <input
+        type="text"
+        placeholder="상세"
+        value={details}
+        onChange={(e) => setDetails(e.target.value)}
+        style={inputStyle}
+      />
+      <input
+        type="text"
+        placeholder="카테고리"
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        style={inputStyle}
+      />
+      {/* 추가된 전화번호 입력 필드 */}
+      <input
+        type="tel"
+        placeholder="전화번호 (선택사항)"
+        value={phoneNumber}
+        onChange={(e) => setPhoneNumber(e.target.value)}
+        style={inputStyle}
+      />
+      {/* 추가된 생년월일 입력 필드 */}
+      <input
+        type="date"
+        placeholder="생년월일 (선택사항)"
+        value={birthDate}
+        onChange={(e) => setBirthDate(e.target.value)}
+        style={inputStyle}
+      />
+      {base64DataArray.map((base64, index) => (
         <img
-          src={previewUrl}
-          alt="Uploaded Preview"
+          key={index}
+          src={base64}
+          alt={`Uploaded Preview ${index}`}
           style={{ width: "100%", height: "auto", marginBottom: "10px" }}
         />
-      )}
+      ))}
       <label
         htmlFor="imageUpload"
         style={{
@@ -55,11 +116,14 @@ function LostForm() {
       <input
         type="file"
         id="imageUpload"
-        style={{ display: "none" }} // 숨김 처리된 파일 업로드 input
+        style={{ display: "none" }}
         accept="image/*"
+        multiple
         onChange={handleImageUpload}
       />
-      <button style={buttonStyle}>등록하기</button>
+      <button style={buttonStyle} onClick={handleFormSubmit}>
+        등록하기
+      </button>
     </div>
   );
 }
@@ -68,7 +132,7 @@ const inputStyle = {
   padding: "10px",
   border: "1px solid #ccc",
   borderRadius: "4px",
-  width: "100%", // 너비 설정
+  width: "100%",
 };
 
 const buttonStyle = {
