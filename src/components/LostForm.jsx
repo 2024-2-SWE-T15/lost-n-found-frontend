@@ -9,6 +9,8 @@ function LostForm({ coordinates }) {
   const [selectedImages, setSelectedImages] = useState([]);
   const [base64DataArray, setBase64DataArray] = useState([]);
 
+  const URL = 'https://caring-sadly-marmoset.ngrok-free.app'; // API base URL
+
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
     const newSelectedImages = [...selectedImages];
@@ -20,21 +22,20 @@ function LostForm({ coordinates }) {
       const reader = new FileReader();
       reader.onloadend = () => {
         newBase64DataArray.push(reader.result);
-        setBase64DataArray(newBase64DataArray);
+        setBase64DataArray([...newBase64DataArray]);
         console.log("Base64 Encoded Image:", reader.result);
       };
       reader.readAsDataURL(file);
     });
 
-    setSelectedImages(newSelectedImages);
+    setSelectedImages([...newSelectedImages]);
   };
 
-  const handleFormSubmit = () => {
+  const handleFormSubmit = async () => {
     const categoryArray = category.split(" ");
-
     const requestBody = {
       title: title,
-      coordinates: coordinates,
+      coordinates: coordinates || [null, null], // Use provided coordinates
       hashtags: categoryArray,
       description: details,
       photos: base64DataArray,
@@ -45,6 +46,25 @@ function LostForm({ coordinates }) {
     };
 
     console.log("Request Body:", requestBody);
+
+    try {
+      const response = await fetch(`${URL}/post/lost`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const responseData = await response.json();
+      console.log("Response from API:", responseData);
+    } catch (error) {
+      console.error("Error sending request:", error);
+    }
   };
 
   return (
@@ -52,6 +72,7 @@ function LostForm({ coordinates }) {
       style={{
         display: "flex",
         flexDirection: "column",
+        alignItems: "center",
         gap: "10px",
         maxWidth: "300px",
         margin: "0 auto",
@@ -78,7 +99,7 @@ function LostForm({ coordinates }) {
         onChange={(e) => setCategory(e.target.value)}
         style={inputStyle}
       />
-      {/* 추가된 전화번호 입력 필드 */}
+      {/* Additional phone number input */}
       <input
         type="tel"
         placeholder="전화번호 (선택사항)"
@@ -86,7 +107,7 @@ function LostForm({ coordinates }) {
         onChange={(e) => setPhoneNumber(e.target.value)}
         style={inputStyle}
       />
-      {/* 추가된 생년월일 입력 필드 */}
+      {/* Additional birth date input */}
       <input
         type="date"
         placeholder="생년월일 (선택사항)"
@@ -99,13 +120,13 @@ function LostForm({ coordinates }) {
           key={index}
           src={base64}
           alt={`Uploaded Preview ${index}`}
-          style={{ width: "100%", height: "auto", marginBottom: "10px" }}
+          style={{ width: '200px', height: '200px', marginBottom: '10px' }}
         />
       ))}
       <label
         htmlFor="imageUpload"
         style={{
-          ...buttonStyle,
+          ...imageUploadLabelStyle,
           display: "inline-block",
           textAlign: "center",
           cursor: "pointer",
@@ -135,6 +156,16 @@ const inputStyle = {
   width: "100%",
 };
 
+const imageUploadLabelStyle = {
+  display: 'inline-block',
+  padding: '10px',
+  backgroundColor: '#d4f4d4',
+  borderRadius: '4px',
+  cursor: 'pointer',
+  textAlign: 'center',
+  width: '100%',
+};
+
 const buttonStyle = {
   padding: "10px",
   border: "none",
@@ -142,6 +173,7 @@ const buttonStyle = {
   backgroundColor: "#4CAF50",
   color: "white",
   cursor: "pointer",
+  width: "100%",
 };
 
 export default LostForm;
