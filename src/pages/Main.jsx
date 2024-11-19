@@ -3,34 +3,38 @@ import Sidebar from "../components/Sidebar";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { DEFUALT_SEARCH_RANGES } from "../constants/search_const";
+import { phases , marker_types} from "../constants/map_const";
 
 function Main() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [searchRange, setSearchRange] = useState(DEFUALT_SEARCH_RANGES.UN_CLICKED)
-  const [searchTerm, setSearchTerm] = useState("")
+  const [phase, setPhase] = useState(phases.IDLE)
 
   const navigate = useNavigate();
+  console.log(phase)
 
-  function HandleMarkerClick(id) {
+  function HandleMarkerClick(id, markertype) {
     if (id === null) {//click ground
-      setIsSidebarOpen(false);
       setSelectedMarkerId("");
+      setIsSidebarOpen(false);
 
-      //search range : click
-      setSearchRange(DEFUALT_SEARCH_RANGES.UN_CLICKED)
-
+      if(phase == phases.IDLE){
+        console.log("new marker added")
+        setPhase(phases.CHOOSE_LOST_OR_FOUND);
+      }
+      else
+      {
+        console.log("cancle add marker")
+        setPhase(phases.IDLE);
+      }
 
     } else {//click marker
-      setIsSidebarOpen(true);
+      
       setSelectedMarkerId(id);
+      setIsSidebarOpen(true);
 
-
-      //search range : clicked_marker
-      setSearchRange(DEFUALT_SEARCH_RANGES.CLICKED)
-
+      
     }
   }
 
@@ -55,9 +59,8 @@ function Main() {
       <ContentContainer>
         <MapContainer>
           <KakaoMap 
-            searchRange={searchRange}
-            sesarchTerm={searchTerm}
             selectedMarkerId={selectedMarkerId}
+            phase={phase}
             onMarkerClick={HandleMarkerClick} />
         </MapContainer>
         <Sidebar

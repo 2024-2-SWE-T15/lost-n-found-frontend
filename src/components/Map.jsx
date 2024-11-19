@@ -1,12 +1,15 @@
 import { Map, MapMarker, useMap } from "react-kakao-maps-sdk";
 import { useEffect, useState } from "react";
+import MarkerFactory from "./MarkerFactory";
 
 import { SIDEBAR_WIDTH_PX } from "./Sidebar";
 import { fetchMarkers } from "../api";
 import styled from "styled-components";
 import { useKakaoLoader } from "../hooks/useKakaoLoader";
+import { marker_types } from "../constants/map_const";
 
-export default function KakaoMap({searchRange, sesarchTerm, selectedMarkerId, onMarkerClick }) {
+
+export default function KakaoMap({selectedMarkerId, phase, onMarkerClick }) {
   const isSdkLoaded = useKakaoLoader();
   const [markers, setMarkers] = useState([]);
   const [isMarkerLoaded, setIsMarkerLoaded] = useState(false);
@@ -15,14 +18,16 @@ export default function KakaoMap({searchRange, sesarchTerm, selectedMarkerId, on
     lat: 37.293976,
     lng: 126.975059,
   });
+  const [newMarkerId, setNewMarkerId] = useState(null);
 
   const updateMarkers = async () => {
     try {
-      const markers = await fetchMarkers(mapCenter.lat, mapCenter.lng, searchRange);
+      const markers = await fetchMarkers(mapCenter.lat, mapCenter.lng, 10000);
       setMarkers(
         markers.map((marker) => ({
           ...marker,
           content: <div style={{ color: "#000" }}>{marker.title}</div>,
+          type: marker_types.KEEPED
         }))
       );
     } catch (error) {
@@ -30,6 +35,26 @@ export default function KakaoMap({searchRange, sesarchTerm, selectedMarkerId, on
       setMarkers([]);
     }
   };
+
+  //marker add test(local)
+  const addMarker = (lat, lng)=>
+  {
+    const new_marker = {
+      id: markers.length,
+      latlng: { lat: lat, lng: lng },
+      content: <div style={{ color: "#000" }}>new marker</div>,
+      type: marker_types.CLICK_GROUND
+    }
+
+    setMarkers([...markers, new_marker]);
+    return new_marker;
+  }
+
+  //marker remove test(local)
+  const removeMarker = (id) =>
+  {
+    setMarkers(markers.filter((marker) => marker.id !== id));
+  }
 
   //드래그, 줌 했을경우 마커 데이터 가져오기
   useEffect(() => {
@@ -44,51 +69,6 @@ export default function KakaoMap({searchRange, sesarchTerm, selectedMarkerId, on
     }
   }, [mapCenter, zoomLevel]);
 
-  const EventMarkerContainer = ({ position, content, id }) => {
-    const map = useMap();
-    const projection = map.getProjection();
-    console.log(position);
-    function MarkerClickFunc(position, id) {
-      
-      onMarkerClick(id);
-
-      setTimeout(() => {
-        // click event causes the sidebar to open, so we need to adjust the map center
-        const sidebarTopLeft = projection.coordsFromContainerPoint(
-          // eslint-disable-next-line no-undef
-          new kakao.maps.Point(0, 0)
-        );
-        const sidebarTopRight = projection.coordsFromContainerPoint(
-          // eslint-disable-next-line no-undef
-          new kakao.maps.Point(SIDEBAR_WIDTH_PX, 0)
-        );
-
-        const latOffset =
-          (sidebarTopLeft.getLat() - sidebarTopRight.getLat()) / 2;
-        const lngOffset =
-          (sidebarTopLeft.getLng() - sidebarTopRight.getLng()) / 2;
-
-        // eslint-disable-next-line no-undef
-        const newPosition = new kakao.maps.LatLng(
-          position.getLat() + latOffset,
-          position.getLng() + lngOffset
-        );
-
-        map.panTo(newPosition);
-      }, 10);
-    }
-
-    return (
-      <MapMarker
-        position={position}
-        onClick={(marker) => {
-          MarkerClickFunc(marker.getPosition(), id);
-        }}
-      >
-        {selectedMarkerId === id && content}
-      </MapMarker>
-    );
-  };
 
   if (!isSdkLoaded || !isMarkerLoaded) {
     return (
@@ -107,8 +87,21 @@ export default function KakaoMap({searchRange, sesarchTerm, selectedMarkerId, on
           height: "100%",
         }}
         level={zoomLevel}
-        onClick={() => {
-          onMarkerClick(null);
+        onClick={(_, mouseEvent) => {
+          //change phase test
+          if(phase == "IDLE")
+          {
+            const new_marker = addMarker(mouseEvent.latLng.getLat(), mouseEvent.latLng.getLng());
+            onMarkerClick(null, new_marker.type);
+            setNewMarkerId(new_marker.id);
+          }
+          else if (phase == "CHOOSE_LOST_OR_FOUND")
+          {
+            removeMarker(newMarkerId); //
+            setNewMarkerId(null);
+            onMarkerClick(null);
+          }
+          
         }}
         onDragEnd={(map) => {
           const latlng = map.getCenter();
@@ -126,11 +119,16 @@ export default function KakaoMap({searchRange, sesarchTerm, selectedMarkerId, on
         }}
       >
         {markers.map((value) => (
-          <EventMarkerContainer
+          <MarkerFactory
+            id={value.id}
             key={value.id}
             position={value.latlng}
             content={value.content}
-            id={value.id}
+            selectedMarkerId={selectedMarkerId}
+            onMarkerClick={onMarkerClick}
+            phase={phase}
+            type={value.type}
+            
           />
         ))}
       </Map>
