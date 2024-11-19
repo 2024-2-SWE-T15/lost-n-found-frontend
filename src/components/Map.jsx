@@ -6,9 +6,8 @@ import { fetchMarkers } from "../api";
 import styled from "styled-components";
 import { useKakaoLoader } from "../hooks/useKakaoLoader";
 
-export default function KakaoMap({ onMarkerClick }) {
+export default function KakaoMap({searchRange, sesarchTerm, selectedMarkerId, onMarkerClick }) {
   const isSdkLoaded = useKakaoLoader();
-  const [selectedMarkerId, setSelectedMarkerId] = useState("");
   const [markers, setMarkers] = useState([]);
   const [isMarkerLoaded, setIsMarkerLoaded] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(3);
@@ -19,7 +18,7 @@ export default function KakaoMap({ onMarkerClick }) {
 
   const updateMarkers = async () => {
     try {
-      const markers = await fetchMarkers(mapCenter.lat, mapCenter.lng, 10000);
+      const markers = await fetchMarkers(mapCenter.lat, mapCenter.lng, searchRange);
       setMarkers(
         markers.map((marker) => ({
           ...marker,
@@ -50,7 +49,7 @@ export default function KakaoMap({ onMarkerClick }) {
     const projection = map.getProjection();
     console.log(position);
     function MarkerClickFunc(position, id) {
-      setSelectedMarkerId(id);
+      
       onMarkerClick(id);
 
       setTimeout(() => {
@@ -109,7 +108,6 @@ export default function KakaoMap({ onMarkerClick }) {
         }}
         level={zoomLevel}
         onClick={() => {
-          setSelectedMarkerId("");
           onMarkerClick(null);
         }}
         onDragEnd={(map) => {

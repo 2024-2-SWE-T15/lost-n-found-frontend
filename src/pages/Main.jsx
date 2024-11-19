@@ -3,21 +3,35 @@ import Sidebar from "../components/Sidebar";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { DEFUALT_SEARCH_RANGES } from "../constants/search_const";
 
 function Main() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [searchRange, setSearchRange] = useState(DEFUALT_SEARCH_RANGES.UN_CLICKED)
+  const [searchTerm, setSearchTerm] = useState("")
+
   const navigate = useNavigate();
 
   function HandleMarkerClick(id) {
-    if (id === null) {
+    if (id === null) {//click ground
       setIsSidebarOpen(false);
-    } else {
-      setIsSidebarOpen(true);
-    }
+      setSelectedMarkerId("");
 
-    setSelectedMarkerId(id);
+      //search range : click
+      setSearchRange(DEFUALT_SEARCH_RANGES.UN_CLICKED)
+
+
+    } else {//click marker
+      setIsSidebarOpen(true);
+      setSelectedMarkerId(id);
+
+
+      //search range : clicked_marker
+      setSearchRange(DEFUALT_SEARCH_RANGES.CLICKED)
+
+    }
   }
 
   return (
@@ -40,7 +54,11 @@ function Main() {
       </TopBar>
       <ContentContainer>
         <MapContainer>
-          <KakaoMap onMarkerClick={HandleMarkerClick} />
+          <KakaoMap 
+            searchRange={searchRange}
+            sesarchTerm={searchTerm}
+            selectedMarkerId={selectedMarkerId}
+            onMarkerClick={HandleMarkerClick} />
         </MapContainer>
         <Sidebar
           isSidebarOpen={isSidebarOpen}
