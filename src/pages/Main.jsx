@@ -3,21 +3,66 @@ import Sidebar from "../components/Sidebar";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { phases , marker_types, temp_marker_types} from "../constants/map_const";
 
 function Main() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const navigate = useNavigate();
+  const [phase, setPhase] = useState(phases.IDLE)
 
-  function HandleMarkerClick(id) {
-    if (id === null) {
-      setIsSidebarOpen(false);
-    } else {
-      setIsSidebarOpen(true);
-    }
+  const navigate = useNavigate();
+  console.log(phase)
+
+  function HandleMarkerClick(id, marker_type) {
 
     setSelectedMarkerId(id);
+
+    switch(phase)
+    {
+      case phases.IDLE:
+        if(id === null) //click ground
+        {
+          setIsSidebarOpen(false);
+        }
+        else if(marker_type in marker_types) // click existing marker
+        {
+          setIsSidebarOpen(true);
+        }
+        else if(marker_type === temp_marker_types.TEMP_UNSET) //click new temp marker
+        {
+          console.log("choose lost or found")
+          setPhase(phases.CHOOSE_LOST_OR_FOUND);
+          setIsSidebarOpen(true);
+        }
+        
+        break;
+      case phases.CHOOSE_LOST_OR_FOUND:
+        if(id == null) //click ground 
+        {
+          setPhase(phases.IDLE);
+          setIsSidebarOpen(false);
+        }
+        else//click marker
+        {
+          setSelectedMarkerId(id);
+          setIsSidebarOpen(true);
+        }
+        break;
+
+      case phases.ADD_FOUND_MARKER:
+        break;
+      case phases.ADD_LOST_MARKER:
+        break;
+
+      case phases.ADD_KEEPED_MARKER:
+         break;
+
+      default:
+        console.log("phase error")
+        break;
+
+    }
   }
 
   return (
@@ -40,7 +85,10 @@ function Main() {
       </TopBar>
       <ContentContainer>
         <MapContainer>
-          <KakaoMap onMarkerClick={HandleMarkerClick} />
+          <KakaoMap 
+            selectedMarkerId={selectedMarkerId}
+            phase={phase}
+            onMarkerClick={HandleMarkerClick} />
         </MapContainer>
         <Sidebar
           isSidebarOpen={isSidebarOpen}
