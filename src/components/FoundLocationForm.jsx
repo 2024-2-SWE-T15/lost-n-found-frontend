@@ -1,21 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-function FoundLocationForm({ requestBody, goBack, setCoordinates }) { // Accept goBack as a prop
-  const [keptCoordinates, setKeptCoordinates] = useState([37.5665, 126.9780]);
+function FoundLocationForm({ requestBody, goBack, setCoordinates, initialCoordinates }) {
+  const [keptCoordinates, setKeptCoordinates] = useState(initialCoordinates || [37.5665, 126.9780]); // 초기 값 설정
   console.log("request body -> ", requestBody);
 
-  const handleCoordinateUpdate = (lat, lng) => {
-    setKeptCoordinates([lat, lng]);
-    if (setCoordinates) {
-      setCoordinates([lat, lng]); // Optionally update the parent coordinates
+  useEffect(() => {
+    if (initialCoordinates) {
+      setKeptCoordinates(initialCoordinates);
     }
-    console.log("New coordinates set in FoundLocationForm:", [lat, lng]);
+  }, [initialCoordinates]);
+
+  const handleRegisterClick = () => {
+    // 새로운 requestBody에 keptCoordinates를 추가합니다.
+    const updatedRequestBody = {
+      ...requestBody,
+      keptCoordinates, // 새로운 변수 추가
+    };
+    console.log("Updated request body with keptCoordinates -> ", updatedRequestBody);
   };
-  
+
   return (
     <div style={containerStyle}>
       <h1>물건을 보관할 장소를 지정해주세요</h1>
-      <button style={buttonStyle}>위치 지정하기</button>
+      <button style={buttonStyle} onClick={handleRegisterClick}>등록하기</button>
       <button style={backButtonStyle} onClick={goBack}>뒤로 가기</button>
     </div>
   );
@@ -45,7 +52,7 @@ const backButtonStyle = {
   backgroundColor: "#FF5C5C",
   color: "white",
   cursor: "pointer",
-  marginTop: "10px", // To add some spacing from the previous button
+  marginTop: "10px",
 };
 
 export default FoundLocationForm;

@@ -15,6 +15,8 @@ function Main() {
   const [sidebarContent, setSidebarContent] = useState("");
   const [coordinates, setCoordinates] = useState([null, null]);
   const [foundFormData, setFoundFormData] = useState(null);
+  const [placementCoordinates, setPlacementCoordinates] = useState(null); // 분실물 놔둘 위치 (FoundLostCocation)
+
   const navigate = useNavigate();
 
   function HandleMarkerClick(id) {
@@ -53,6 +55,7 @@ function Main() {
             setSidebarContent={setSidebarContent}
             setCoordinates={setCoordinates}
             isMarkerFixed={!!foundFormData}
+            setPlacementCoordinates={setPlacementCoordinates}
           />
         </MapContainer>
         <Sidebar
@@ -67,6 +70,7 @@ function Main() {
               <FoundLocationForm
                 requestBody={foundFormData}
                 goBack={() => setFoundFormData(null)} // Pass the goBack handler
+                initialCoordinates={placementCoordinates}
               />
             ) : (
               <FoundForm

@@ -6,7 +6,7 @@ import { fetchMarkers } from "../api";
 import styled from "styled-components";
 import { useKakaoLoader } from "../hooks/useKakaoLoader";
 
-export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordinates, isMarkerFixed }) {
+export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordinates, isMarkerFixed, setPlacementCoordinates }) {
   const isSdkLoaded = useKakaoLoader();
   const [selectedMarkerId, setSelectedMarkerId] = useState("");
   const [markers, setMarkers] = useState([]);
@@ -26,7 +26,11 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordina
 
     if (isMarkerFixed) {
       // Handle special marker placement when isMarkerFixed is true
-      setPlacementMarkerPosition({ lat, lng });
+      const newPosition = { lat, lng };
+      setPlacementMarkerPosition(newPosition);
+      if (setPlacementCoordinates) {
+        setPlacementCoordinates(newPosition); // Main에 전달
+      }
       console.log("New marker coordinates (Fixed Mode):", { lat, lng });
     } else {
       console.log("Clicked position:", { lat, lng });
