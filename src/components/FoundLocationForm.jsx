@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 function FoundLocationForm({ requestBody, goBack, setCoordinates, initialCoordinates }) {
-  const [keptCoordinates, setKeptCoordinates] = useState(initialCoordinates || [37.5665, 126.9780]); // 초기 값 설정
+  const [kept_coordinates, setKeptCoordinates] = useState(initialCoordinates || [37.5665, 126.9780]); // 초기 값 설정
   console.log("request body -> ", requestBody);
 
   useEffect(() => {
@@ -11,12 +11,17 @@ function FoundLocationForm({ requestBody, goBack, setCoordinates, initialCoordin
   }, [initialCoordinates]);
 
   const handleRegisterClick = () => {
-    // 새로운 requestBody에 keptCoordinates를 추가합니다.
+    // 배열로 변환
+    const formattedKeptCoordinates = Array.isArray(kept_coordinates)
+      ? kept_coordinates
+      : [kept_coordinates.lat, kept_coordinates.lng];
+  
+    // Create updated request body with kept_coordinates as an array
     const updatedRequestBody = {
       ...requestBody,
-      keptCoordinates, // 새로운 변수 추가
+      kept_coordinates: formattedKeptCoordinates, // Ensure it is an array
     };
-    console.log("Updated request body with keptCoordinates -> ", updatedRequestBody);
+    console.log("Updated request body with kept_coordinates -> ", updatedRequestBody);
   };
 
   return (
