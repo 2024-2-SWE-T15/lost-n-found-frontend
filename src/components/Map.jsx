@@ -17,34 +17,38 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordina
     lng: 126.975059,
   });
   const [clickedPosition, setClickedPosition] = useState(null);
+  const [placementMarkerPosition, setPlacementMarkerPosition] = useState(null); // 찾은 사람이 물건을 둘 위치
 
   // 지도 클릭 시 마커 표시
   const handleMapClick = (_target, mouseEvent) => {
-    if (isMarkerFixed) {
-      return; // Prevent marker movement when markers are fixed
-    }
-
     const lat = mouseEvent.latLng.getLat();
     const lng = mouseEvent.latLng.getLng();
-    console.log("Clicked position:", { lat, lng });
 
-    if (setCoordinates) {
-      setCoordinates([lat, lng]);
-    }
-
-    // Check for overlap with existing markers
-    const overlappingMarker = markers.find(
-      (marker) =>
-        Math.abs(marker.latlng.lat - lat) < 0.0001 &&
-        Math.abs(marker.latlng.lng - lng) < 0.0001
-    );
-
-    if (overlappingMarker) {
-      setSelectedMarkerId(overlappingMarker.id);
-      setClickedPosition(null); // Clear clicked position marker
+    if (isMarkerFixed) {
+      // Handle special marker placement when isMarkerFixed is true
+      setPlacementMarkerPosition({ lat, lng });
+      console.log("New marker coordinates (Fixed Mode):", { lat, lng });
     } else {
-      setSelectedMarkerId(""); // Deselect any existing markers
-      setClickedPosition({ lat, lng });
+      console.log("Clicked position:", { lat, lng });
+
+      if (setCoordinates) {
+        setCoordinates([lat, lng]);
+      }
+
+      // Check for overlap with existing markers
+      const overlappingMarker = markers.find(
+        (marker) =>
+          Math.abs(marker.latlng.lat - lat) < 0.0001 &&
+          Math.abs(marker.latlng.lng - lng) < 0.0001
+      );
+
+      if (overlappingMarker) {
+        setSelectedMarkerId(overlappingMarker.id);
+        setClickedPosition(null); // Clear clicked position marker
+      } else {
+        setSelectedMarkerId(""); // Deselect any existing markers
+        setClickedPosition({ lat, lng });
+      }
     }
   };
 
@@ -148,25 +152,20 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordina
           height: "100%",
         }}
         level={zoomLevel}
-        onClick={handleMapClick} // Handle map click
+        onClick={handleMapClick} // Handle map clicks
         onDragEnd={(map) => {
-          if (isMarkerFixed) return;
+          if (isMarkerFixed) return; // Prevent dragging if marker is fixed
           const latlng = map.getCenter();
           const level = map.getLevel();
-          const newCenter = {
-            lat: latlng.getLat(),
-            lng: latlng.getLng(),
-          };
-
           setZoomLevel(level);
-          setMapCenter(newCenter);
+          setMapCenter({ lat: latlng.getLat(), lng: latlng.getLng() });
         }}
         onZoomChanged={(map) => {
-          if (isMarkerFixed) return; 
+          if (isMarkerFixed) return; // Prevent zooming if marker is fixed
           setZoomLevel(map.getLevel());
         }}
       >
-        {/* Display clicked position marker with custom red color */}
+        {/* Display marker for clicked position regardless of isMarkerFixed state */}
         {clickedPosition && (
           <MapMarker
             position={clickedPosition}
@@ -178,8 +177,8 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordina
             <div
               style={{
                 display: "flex",
-                flexDirection: "column", // Flexbox로 수직 정렬
-                gap: "10px", // 버튼 간의 간격
+                flexDirection: "column",
+                gap: "10px",
                 width: "200px",
                 padding: "10px",
                 border: "1px solid #ccc",
@@ -214,13 +213,26 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordina
                 }}
                 onClick={() => {
                   if (!isMarkerFixed) handleFoundButtonClick();
-                }}              >
+                }}
+              >
                 여기서 찾았음
               </button>
             </div>
           </MapMarker>
         )}
-        {/* Display existing markers */}
+  
+        {/* Display special marker when isMarkerFixed is true */}
+        {isMarkerFixed && placementMarkerPosition && (
+          <MapMarker
+            position={placementMarkerPosition}
+            image={{
+              src: "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png", // Example marker (change color/image as needed)
+              size: { width: 34, height: 44 },
+            }}
+          />
+        )}
+  
+        {/* Always display existing markers */}
         {markers.map((value) => (
           <EventMarkerContainer
             key={value.id}

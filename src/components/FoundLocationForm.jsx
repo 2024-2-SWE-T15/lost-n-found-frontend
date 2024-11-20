@@ -1,8 +1,16 @@
 import React, { useState } from "react";
 
-function FoundLocationForm({ requestBody, goBack }) { // Accept goBack as a prop
+function FoundLocationForm({ requestBody, goBack, setCoordinates }) { // Accept goBack as a prop
   const [keptCoordinates, setKeptCoordinates] = useState([37.5665, 126.9780]);
   console.log("request body -> ", requestBody);
+
+  const handleCoordinateUpdate = (lat, lng) => {
+    setKeptCoordinates([lat, lng]);
+    if (setCoordinates) {
+      setCoordinates([lat, lng]); // Optionally update the parent coordinates
+    }
+    console.log("New coordinates set in FoundLocationForm:", [lat, lng]);
+  };
   
   return (
     <div style={containerStyle}>
