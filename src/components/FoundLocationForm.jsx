@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Spacer } from "./Spacer";
 
 function FoundLocationForm({ requestBody, goBack, setCoordinates, initialCoordinates }) {
   const [kept_coordinates, setKeptCoordinates] = useState(initialCoordinates || [37.5665, 126.9780]); // 초기 값 설정
@@ -14,7 +15,7 @@ function FoundLocationForm({ requestBody, goBack, setCoordinates, initialCoordin
     const formattedKeptCoordinates = Array.isArray(kept_coordinates)
       ? kept_coordinates
       : [kept_coordinates.lat, kept_coordinates.lng];
-  
+
     // Create updated request body with kept_coordinates as an array
     const updatedRequestBody = {
       ...requestBody,
@@ -25,19 +26,50 @@ function FoundLocationForm({ requestBody, goBack, setCoordinates, initialCoordin
 
   return (
     <div style={containerStyle}>
-      <h1>물건을 보관할 장소를 지정해주세요</h1>
-      <button style={buttonStyle} onClick={handleRegisterClick}>등록하기</button>
-      <button style={backButtonStyle} onClick={goBack}>뒤로 가기</button>
+      <button style={backButtonStyle} onClick={goBack}>
+        &#8592; 뒤로
+      </button>
+      <div style={headerStyle}>
+        <h1 style={titleStyle}>물건을 보관할 장소를 지정해주세요</h1>
+      </div>
+      <div style={contentContainerStyle}>
+        <button style={buttonStyle} onClick={handleRegisterClick}>
+          등록하기
+        </button>
+      </div>
     </div>
   );
 }
 
 const containerStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  padding: '20px',
-  gap: '10px',
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "space-between",
+  height: "100vh", // Full screen height
+  padding: "20px",
+  position: "relative", // Needed for placing the back button absolutely
+};
+
+const headerStyle = {
+  position: "absolute",
+  top: "20px", // Space from the top
+  textAlign: "center",
+  width: "100%",
+};
+
+const contentContainerStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  flex: "1", // Push content to the middle of the page
+};
+
+const titleStyle = {
+  fontSize: "20px",
+  fontWeight: "bold",
+  margin: "40px",
 };
 
 const buttonStyle = {
@@ -47,16 +79,20 @@ const buttonStyle = {
   backgroundColor: "#4CAF50",
   color: "white",
   cursor: "pointer",
+  width: "100%",
 };
 
 const backButtonStyle = {
-  padding: "10px",
+  position: "absolute",
+  top: "10px",
+  left: "10px",
+  padding: "5px 10px",
   border: "none",
   borderRadius: "4px",
-  backgroundColor: "#FF5C5C",
-  color: "white",
+  backgroundColor: "transparent",
+  color: "#333",
+  fontSize: "16px",
   cursor: "pointer",
-  marginTop: "10px",
 };
 
 export default FoundLocationForm;
