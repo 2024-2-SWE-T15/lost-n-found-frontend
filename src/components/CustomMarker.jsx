@@ -1,7 +1,7 @@
-import { Map, MapMarker, useMap } from "react-kakao-maps-sdk";
+import {  MapMarker, useMap } from "react-kakao-maps-sdk";
 import { SIDEBAR_WIDTH_PX } from "./Sidebar";
 import PropTypes from 'prop-types';
-import { phases, marker_types, temp_marker_types } from "../constants/map_const";
+import {  marker_types, temp_marker_types } from "../constants/map_const";
 // @ts-ignore
 import marker_red from "../assets/marker_img/marker_red.png";
 // @ts-ignore
@@ -10,11 +10,12 @@ import marker_green from "../assets/marker_img/marker_green.png";
 import marker_blue from "../assets/marker_img/marker_blue.png";
 // @ts-ignore
 import marker_black from "../assets/marker_img/marker_black.png";
-
+// @ts-ignore
+import marker_new from "../assets/marker_img/marker_new_3.png";
 
 const imageSize = { width: 32, height: 32 }
 
-const MarkerFactory = ({ position, content, id, selectedMarkerId, onMarkerClick, phase, type}) => {
+const CustomMarker = ({id, type, position,isPopupOpened ,popupContent,  onMarkerClick}) => {
   const map = useMap();
   const projection = map.getProjection();
 
@@ -54,14 +55,12 @@ const MarkerFactory = ({ position, content, id, selectedMarkerId, onMarkerClick,
   //set marker image by type & phase
   switch (type) {
 
-    case marker_types.KEEPED:
-      if(phase === phases.IDLE){
-        marker_img = marker_blue;
-      }
-      else if (phase === phases.CHOOSE_LOST_OR_FOUND){
-        marker_img = marker_green;
-      }
-
+    case marker_types.KEPT_IDLE_PHASE:
+      marker_img = marker_blue;
+      break;
+      
+    case marker_types.KPET_CHOOSE_PHASE:
+      marker_img = marker_green;
       break;
     case marker_types.FOUND:
       marker_img = marker_green;
@@ -71,7 +70,7 @@ const MarkerFactory = ({ position, content, id, selectedMarkerId, onMarkerClick,
       break;
 
     case temp_marker_types.TEMP_UNSET:
-      marker_img = marker_red;
+      marker_img = marker_new;
       break;
   }
 
@@ -87,20 +86,20 @@ const MarkerFactory = ({ position, content, id, selectedMarkerId, onMarkerClick,
         size:  imageSize ,
         }}
     >
-      {selectedMarkerId === id && content}
+      {isPopupOpened && popupContent}
     </MapMarker>
   );
 };
 
-MarkerFactory.propTypes = {
-  position: PropTypes.object.isRequired,
-  content: PropTypes.node,
+CustomMarker.propTypes = {
+  
   id: PropTypes.any.isRequired,
+  type : PropTypes.string.isRequired,
+  position: PropTypes.object.isRequired,
+  isPopupOpened: PropTypes.bool.isRequired,
+  popupContent: PropTypes.node,
   onMarkerClick: PropTypes.func.isRequired,
-  selectedMarkerId: PropTypes.any,
-  phase : PropTypes.string.isRequired,
-  type : PropTypes.string.isRequired
 
 };
 
-export default MarkerFactory;
+export default CustomMarker;

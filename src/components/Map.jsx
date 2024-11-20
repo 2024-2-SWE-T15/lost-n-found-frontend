@@ -1,6 +1,6 @@
 import { Map, MapMarker, useMap } from "react-kakao-maps-sdk";
 import { useEffect, useState } from "react";
-import MarkerFactory from "./MarkerFactory";
+import CustomMarker from "./CustomMarker";
 
 import { SIDEBAR_WIDTH_PX } from "./Sidebar";
 import { fetchMarkers } from "../api";
@@ -22,11 +22,13 @@ export default function KakaoMap({selectedMarkerId, phase, onMarkerClick }) {
   const updateMarkers = async () => {
     try {
       const markers = await fetchMarkers(mapCenter.lat, mapCenter.lng, 10000);
+
+      
       setMarkers(
         markers.map((marker) => ({
           ...marker,
           content: <div style={{ color: "#000" }}>{marker.title}</div>,
-          type: marker_types.KEEPED
+          type: marker_types.KEPT_IDLE_PHASE //임시
         }))
       );
     } catch (error) {
@@ -113,7 +115,7 @@ export default function KakaoMap({selectedMarkerId, phase, onMarkerClick }) {
             lat: latlng.getLat(),
             lng: latlng.getLng(),
           };
-
+          
           setZoomLevel(level);
           setMapCenter(newCenter);
         }}
@@ -122,15 +124,14 @@ export default function KakaoMap({selectedMarkerId, phase, onMarkerClick }) {
         }}
       >
         {markers.map((value) => (
-          <MarkerFactory
-            id={value.id}
+          <CustomMarker
             key={value.id}
-            position={value.latlng}
-            content={value.content}
-            selectedMarkerId={selectedMarkerId}
-            onMarkerClick={onMarkerClick}
-            phase={phase}
+            id={value.id}
             type={value.type}
+            position={value.latlng}
+            isPopupOpened={selectedMarkerId === value.id}
+            popupContent={value.content}
+            onMarkerClick={onMarkerClick}
             
           />
         ))}
