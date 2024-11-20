@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Spacer } from "./Spacer";
 
-function FoundForm() {
+function FoundForm({ setFoundFormData, coordinates }) {
   const [title, setTitle] = useState('');
   const [details, setDetails] = useState('');
   const [category, setCategory] = useState('');
@@ -20,12 +20,25 @@ function FoundForm() {
       reader.onloadend = () => {
         newBase64DataArray.push(reader.result);
         setBase64DataArray([...newBase64DataArray]);
-        console.log("Base64 Encoded Image:", reader.result); // 콘솔에 Base64 데이터 출력
       };
       reader.readAsDataURL(file);
     });
 
     setSelectedImages([...newSelectedImages]);
+  };
+
+  const handleFormSubmit = () => {
+    const categoryArray = category.split(" ");
+    const requestBody = {
+      title: title,
+      coordinates: coordinates || [null, null], // Add coordinates to requestBody
+      hashtags: categoryArray,
+      description: details,
+      photos: base64DataArray,
+    };
+
+    // Pass data to Main component to switch to FoundLocationForm
+    setFoundFormData(requestBody);
   };
 
   return (
@@ -81,12 +94,13 @@ function FoundForm() {
       </label>
       <br></br>
       <br></br>
-      <h1>물건을 보관할 장소를 지정해주세요</h1>
-      <Spacer></Spacer>
-      <button style={buttonStyle}>위치 지정하기</button>
+      <button style={buttonStyle} onClick={handleFormSubmit}>
+        등록하기
+      </button>
     </div>
   );
 }
+
 
 const containerStyle = {
   display: 'flex',
@@ -112,14 +126,14 @@ const inputStyle = {
 };
 
 const imageUploadLabelStyle = {
-    display: 'inline-block',
-    padding: '10px',
-    backgroundColor: '#d4f4d4',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    textAlign: 'center',
-    width: '100%',
-  };
+  display: 'inline-block',
+  padding: '10px',
+  backgroundColor: '#d4f4d4',
+  borderRadius: '4px',
+  cursor: 'pointer',
+  textAlign: 'center',
+  width: '100%',
+};
 
 const buttonStyle = {
   padding: "10px",
@@ -130,6 +144,5 @@ const buttonStyle = {
   cursor: "pointer",
   width: "100%",
 };
-
 
 export default FoundForm;

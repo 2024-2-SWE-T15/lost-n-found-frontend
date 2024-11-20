@@ -6,13 +6,15 @@ import { useState } from "react";
 
 import LostForm from "../components/LostForm";
 import FoundForm from "../components/FoundForm";
+import FoundLocationForm from "../components/FoundLocationForm";
 
 function Main() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [sidebarContent, setSidebarContent] = useState(""); // 추가된 상태
-  const [coordinates, setCoordinates] = useState([null, null]); // State to hold coordinates
+  const [sidebarContent, setSidebarContent] = useState("");
+  const [coordinates, setCoordinates] = useState([null, null]);
+  const [foundFormData, setFoundFormData] = useState(null);
   const navigate = useNavigate();
 
   function HandleMarkerClick(id) {
@@ -50,20 +52,32 @@ function Main() {
             onMarkerClick={HandleMarkerClick}
             setSidebarContent={setSidebarContent}
             setCoordinates={setCoordinates}
+            isMarkerFixed={!!foundFormData}
           />
         </MapContainer>
         <Sidebar
           isSidebarOpen={isSidebarOpen}
           onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         >
-          {/* 조건부 렌더링 */}
+          {/* Conditional rendering logic */}
           {sidebarContent === "lost" ? (
             <LostForm coordinates={coordinates} />
           ) : sidebarContent === "found" ? (
-            <FoundForm />
+            foundFormData ? (
+              <FoundLocationForm
+                requestBody={foundFormData}
+                goBack={() => setFoundFormData(null)} // Pass the goBack handler
+              />
+            ) : (
+              <FoundForm
+                setFoundFormData={setFoundFormData}
+                coordinates={coordinates}
+              />
+            )
           ) : (
-            <p>기본 Sidebar 콘텐츠: {selectedMarkerId}</p> // 이곳에 기본값 추가 등 진행
+            <p>기본 Sidebar 콘텐츠: {selectedMarkerId}</p>
           )}
+
         </Sidebar>
       </ContentContainer>
     </Container>

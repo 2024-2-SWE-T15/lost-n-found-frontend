@@ -6,7 +6,7 @@ import { fetchMarkers } from "../api";
 import styled from "styled-components";
 import { useKakaoLoader } from "../hooks/useKakaoLoader";
 
-export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordinates }) {
+export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordinates, isMarkerFixed }) {
   const isSdkLoaded = useKakaoLoader();
   const [selectedMarkerId, setSelectedMarkerId] = useState("");
   const [markers, setMarkers] = useState([]);
@@ -17,6 +17,36 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordina
     lng: 126.975059,
   });
   const [clickedPosition, setClickedPosition] = useState(null);
+
+  // 지도 클릭 시 마커 표시
+  const handleMapClick = (_target, mouseEvent) => {
+    if (isMarkerFixed) {
+      return; // Prevent marker movement when markers are fixed
+    }
+
+    const lat = mouseEvent.latLng.getLat();
+    const lng = mouseEvent.latLng.getLng();
+    console.log("Clicked position:", { lat, lng });
+
+    if (setCoordinates) {
+      setCoordinates([lat, lng]);
+    }
+
+    // Check for overlap with existing markers
+    const overlappingMarker = markers.find(
+      (marker) =>
+        Math.abs(marker.latlng.lat - lat) < 0.0001 &&
+        Math.abs(marker.latlng.lng - lng) < 0.0001
+    );
+
+    if (overlappingMarker) {
+      setSelectedMarkerId(overlappingMarker.id);
+      setClickedPosition(null); // Clear clicked position marker
+    } else {
+      setSelectedMarkerId(""); // Deselect any existing markers
+      setClickedPosition({ lat, lng });
+    }
+  };
 
   const handleLostButtonClick = () => {
     setSidebarContent("lost");
@@ -53,34 +83,6 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordina
       setIsMarkerLoaded(true);
     }
   }, [mapCenter, zoomLevel]);
-
-  // 지도 클릭 시 마커 표시
-  const handleMapClick = (_target, mouseEvent) => {
-    const lat = mouseEvent.latLng.getLat();
-    const lng = mouseEvent.latLng.getLng();
-    console.log("Clicked position:", { lat, lng });
-
-    if (setCoordinates) {
-      setCoordinates([lat, lng]);
-    }
-
-    // Check for overlap with existing markers
-    const overlappingMarker = markers.find(
-      (marker) =>
-        Math.abs(marker.latlng.lat - lat) < 0.0001 &&
-        Math.abs(marker.latlng.lng - lng) < 0.0001
-    );
-
-    if (overlappingMarker) {
-      // If overlapping, select existing marker and update state
-      setSelectedMarkerId(overlappingMarker.id);
-      setClickedPosition(null); // Clear clicked position marker
-    } else {
-      // If no overlap, create new marker
-      setSelectedMarkerId(""); // Deselect any existing markers
-      setClickedPosition({ lat, lng });
-    }
-  };
 
   const EventMarkerContainer = ({ position, content, id }) => {
     const map = useMap();
@@ -148,6 +150,7 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordina
         level={zoomLevel}
         onClick={handleMapClick} // Handle map click
         onDragEnd={(map) => {
+          if (isMarkerFixed) return;
           const latlng = map.getCenter();
           const level = map.getLevel();
           const newCenter = {
@@ -159,6 +162,7 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordina
           setMapCenter(newCenter);
         }}
         onZoomChanged={(map) => {
+          if (isMarkerFixed) return; 
           setZoomLevel(map.getLevel());
         }}
       >
@@ -193,7 +197,9 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordina
                   borderRadius: "4px",
                   cursor: "pointer",
                 }}
-                onClick={handleLostButtonClick}
+                onClick={() => {
+                  if (!isMarkerFixed) handleLostButtonClick();
+                }}
               >
                 여기서 잃어버림
               </button>
@@ -206,8 +212,9 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordina
                   borderRadius: "4px",
                   cursor: "pointer",
                 }}
-                onClick={handleFoundButtonClick}
-              >
+                onClick={() => {
+                  if (!isMarkerFixed) handleFoundButtonClick();
+                }}              >
                 여기서 찾았음
               </button>
             </div>
