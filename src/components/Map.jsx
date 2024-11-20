@@ -6,7 +6,7 @@ import { SIDEBAR_WIDTH_PX } from "./Sidebar";
 import { fetchMarkers } from "../api";
 import styled from "styled-components";
 import { useKakaoLoader } from "../hooks/useKakaoLoader";
-import { marker_types } from "../constants/map_const";
+import { marker_types, temp_marker_types } from "../constants/map_const";
 
 
 export default function KakaoMap({selectedMarkerId, phase, onMarkerClick }) {
@@ -18,7 +18,6 @@ export default function KakaoMap({selectedMarkerId, phase, onMarkerClick }) {
     lat: 37.293976,
     lng: 126.975059,
   });
-  const [newMarkerId, setNewMarkerId] = useState(null);
 
   const updateMarkers = async () => {
     try {
@@ -37,13 +36,18 @@ export default function KakaoMap({selectedMarkerId, phase, onMarkerClick }) {
   };
 
   //marker add test(local)
-  const addMarker = (lat, lng)=>
+  const addTempMarker = (lat, lng, temp_marker_type)=>
   {
+    if(temp_marker_type == null || !(temp_marker_type in temp_marker_types))
+    {
+      console.error("temp_marker_type is not defined");
+      return;
+    }
     const new_marker = {
       id: markers.length,
       latlng: { lat: lat, lng: lng },
       content: <div style={{ color: "#000" }}>new marker</div>,
-      type: marker_types.CLICK_GROUND
+      type: temp_marker_type
     }
 
     setMarkers([...markers, new_marker]);
@@ -51,9 +55,9 @@ export default function KakaoMap({selectedMarkerId, phase, onMarkerClick }) {
   }
 
   //marker remove test(local)
-  const removeMarker = (id) =>
+  const removeTempMarkerByID = (temp_marker_type) =>
   {
-    setMarkers(markers.filter((marker) => marker.id !== id));
+    setMarkers(markers.filter((marker) => marker.type !== temp_marker_type));
   }
 
   //드래그, 줌 했을경우 마커 데이터 가져오기
@@ -91,15 +95,14 @@ export default function KakaoMap({selectedMarkerId, phase, onMarkerClick }) {
           //change phase test
           if(phase == "IDLE")
           {
-            const new_marker = addMarker(mouseEvent.latLng.getLat(), mouseEvent.latLng.getLng());
-            onMarkerClick(null, new_marker.type);
-            setNewMarkerId(new_marker.id);
+            const temp_marker = addTempMarker(mouseEvent.latLng.getLat(), mouseEvent.latLng.getLng(), temp_marker_types.TEMP_UNSET);
+            onMarkerClick(temp_marker.id, temp_marker.type);
+            
           }
           else if (phase == "CHOOSE_LOST_OR_FOUND")
           {
-            removeMarker(newMarkerId); //
-            setNewMarkerId(null);
-            onMarkerClick(null);
+            removeTempMarkerByID(temp_marker_types.TEMP_UNSET); 
+            onMarkerClick(null, null);
           }
           
         }}

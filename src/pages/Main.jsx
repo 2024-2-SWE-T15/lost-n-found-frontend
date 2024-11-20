@@ -3,7 +3,7 @@ import Sidebar from "../components/Sidebar";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { phases , marker_types} from "../constants/map_const";
+import { phases , marker_types, temp_marker_types} from "../constants/map_const";
 
 function Main() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -14,27 +14,54 @@ function Main() {
   const navigate = useNavigate();
   console.log(phase)
 
-  function HandleMarkerClick(id, markertype) {
-    if (id === null) {//click ground
-      setSelectedMarkerId("");
-      setIsSidebarOpen(false);
+  function HandleMarkerClick(id, marker_type) {
 
-      if(phase == phases.IDLE){
-        console.log("new marker added")
-        setPhase(phases.CHOOSE_LOST_OR_FOUND);
-      }
-      else
-      {
-        console.log("cancle add marker")
-        setPhase(phases.IDLE);
-      }
+    setSelectedMarkerId(id);
 
-    } else {//click marker
-      
-      setSelectedMarkerId(id);
-      setIsSidebarOpen(true);
+    switch(phase)
+    {
+      case phases.IDLE:
+        if(id === null) //click ground
+        {
+          setIsSidebarOpen(false);
+        }
+        else if(marker_type in marker_types) // click existing marker
+        {
+          setIsSidebarOpen(true);
+        }
+        else if(marker_type === temp_marker_types.TEMP_UNSET) //click new temp marker
+        {
+          console.log("choose lost or found")
+          setPhase(phases.CHOOSE_LOST_OR_FOUND);
+          setIsSidebarOpen(true);
+        }
+        
+        break;
+      case phases.CHOOSE_LOST_OR_FOUND:
+        if(id == null) //click ground 
+        {
+          setPhase(phases.IDLE);
+          setIsSidebarOpen(false);
+        }
+        else//click marker
+        {
+          setSelectedMarkerId(id);
+          setIsSidebarOpen(true);
+        }
+        break;
 
-      
+      case phases.ADD_FOUND_MARKER:
+        break;
+      case phases.ADD_LOST_MARKER:
+        break;
+
+      case phases.ADD_KEEPED_MARKER:
+         break;
+
+      default:
+        console.log("phase error")
+        break;
+
     }
   }
 

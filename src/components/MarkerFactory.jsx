@@ -1,7 +1,7 @@
 import { Map, MapMarker, useMap } from "react-kakao-maps-sdk";
 import { SIDEBAR_WIDTH_PX } from "./Sidebar";
 import PropTypes from 'prop-types';
-import { phases, marker_types } from "../constants/map_const";
+import { phases, marker_types, temp_marker_types } from "../constants/map_const";
 // @ts-ignore
 import marker_red from "../assets/marker_img/marker_red.png";
 // @ts-ignore
@@ -20,9 +20,9 @@ const MarkerFactory = ({ position, content, id, selectedMarkerId, onMarkerClick,
 
   let marker_img = null;
 
-  function MarkerClickFunc(position, id) {
+  function MarkerClickFunc(position) {
     
-    onMarkerClick(id);
+    onMarkerClick(id, type);
 
     setTimeout(() => {
       // click event causes the sidebar to open, so we need to adjust the map center
@@ -69,18 +69,18 @@ const MarkerFactory = ({ position, content, id, selectedMarkerId, onMarkerClick,
     case marker_types.LOST:
       marker_img = marker_blue;
       break;
-    case marker_types.CLICK_GROUND:
+
+    case temp_marker_types.TEMP_UNSET:
       marker_img = marker_red;
-      break;  
+      break;
   }
 
 
   return (
-    //custo
     <MapMarker
       position={position}
       onClick={(marker) => {
-        MarkerClickFunc(marker.getPosition(), id);
+        MarkerClickFunc(marker.getPosition());
       }}
       image={{
         src: marker_img,
