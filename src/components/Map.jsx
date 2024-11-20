@@ -31,9 +31,9 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordina
       if (setPlacementCoordinates) {
         setPlacementCoordinates(newPosition); // Main에 전달
       }
-      console.log("New marker coordinates (Fixed Mode):", { lat, lng });
+      // console.log("New marker coordinates (Fixed Mode):", { lat, lng });
     } else {
-      console.log("Clicked position:", { lat, lng });
+      // console.log("Clicked position:", { lat, lng });
 
       if (setCoordinates) {
         setCoordinates([lat, lng]);
@@ -83,8 +83,8 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordina
   useEffect(() => {
     try {
       updateMarkers();
-      console.log("드래그 후 새로운 중심좌표:", mapCenter);
-      console.log("드래그 후 새로운 level:", zoomLevel);
+      // console.log("드래그 후 새로운 중심좌표:", mapCenter);
+      // console.log("드래그 후 새로운 level:", zoomLevel);
     } catch (error) {
       console.error("마커 데이터를 불러오는데 실패했습니다:", error);
     } finally {
@@ -95,7 +95,7 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordina
   const EventMarkerContainer = ({ position, content, id }) => {
     const map = useMap();
     const projection = map.getProjection();
-    console.log(position);
+    // console.log(position);
     function MarkerClickFunc(position, id) {
       setSelectedMarkerId(id);
       setClickedPosition(null); // 기존에 생성되어있는 마커를 클릭하면 새로운 마커는 없애줍니다.

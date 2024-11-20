@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 
 function FoundLocationForm({ requestBody, goBack, setCoordinates, initialCoordinates }) {
   const [kept_coordinates, setKeptCoordinates] = useState(initialCoordinates || [37.5665, 126.9780]); // 초기 값 설정
-  console.log("request body -> ", requestBody);
 
   useEffect(() => {
     if (initialCoordinates) {

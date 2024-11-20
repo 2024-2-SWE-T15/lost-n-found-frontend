@@ -23,7 +23,6 @@ function LostForm({ coordinates }) {
       reader.onloadend = () => {
         newBase64DataArray.push(reader.result);
         setBase64DataArray([...newBase64DataArray]);
-        console.log("Base64 Encoded Image:", reader.result);
       };
       reader.readAsDataURL(file);
     });
@@ -44,8 +43,6 @@ function LostForm({ coordinates }) {
         birth: birthDate,
       },
     };
-
-    console.log("Request Body:", requestBody);
 
     try {
       const response = await fetch(`${URL}/post/lost`, {
