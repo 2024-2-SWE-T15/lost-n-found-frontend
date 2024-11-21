@@ -5,6 +5,8 @@ function FoundForm({ setFoundFormData, coordinates }) {
   const [title, setTitle] = useState('');
   const [details, setDetails] = useState('');
   const [category, setCategory] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
   const [base64DataArray, setBase64DataArray] = useState([]);
 
@@ -35,6 +37,10 @@ function FoundForm({ setFoundFormData, coordinates }) {
       hashtags: categoryArray,
       description: details,
       photos: base64DataArray,
+      personal_idlist: {
+        phone: phoneNumber,
+        birth: birthDate,
+      },
     };
 
     // Pass data to Main component to switch to FoundLocationForm
@@ -63,6 +69,21 @@ function FoundForm({ setFoundFormData, coordinates }) {
         placeholder="카테고리"
         value={category}
         onChange={(e) => setCategory(e.target.value)}
+        style={inputStyle}
+      />
+      <input
+        type="tel"
+        placeholder="전화번호 (선택사항)"
+        value={phoneNumber}
+        onChange={(e) => setPhoneNumber(e.target.value)}
+        style={inputStyle}
+      />
+      {/* Additional birth date input */}
+      <input
+        type="date"
+        placeholder="생년월일 (선택사항)"
+        value={birthDate}
+        onChange={(e) => setBirthDate(e.target.value)}
         style={inputStyle}
       />
       <input
