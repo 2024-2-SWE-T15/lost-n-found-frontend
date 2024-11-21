@@ -73,15 +73,18 @@ const titleStyle = {
 };
 
 const buttonStyle = {
-  padding: "10px",
-  border: "none",
-  borderRadius: "4px",
-  backgroundColor: "#4CAF50",
-  color: "white",
-  cursor: "pointer",
-  width: "100%",
-};
-
+    padding: "15px 20px",
+    border: "none",
+    borderRadius: "6px",
+    backgroundColor: "#4CAF50",
+    color: "white",
+    cursor: "pointer",
+    width: "1000%",
+    textAlign: "center",
+    maxWidth: "300px",
+    marginTop: "20px",
+  };
+  
 const backButtonStyle = {
   position: "absolute",
   top: "10px",
