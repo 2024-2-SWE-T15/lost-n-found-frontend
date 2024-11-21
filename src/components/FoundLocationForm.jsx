@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { Spacer } from "./Spacer";
+import { useEffect, useState } from "react";
 
-function FoundLocationForm({ requestBody, goBack, setCoordinates, initialCoordinates }) {
-  const [kept_coordinates, setKeptCoordinates] = useState(initialCoordinates || [37.5665, 126.9780]); // 초기 값 설정
-  const URL = 'https://caring-sadly-marmoset.ngrok-free.app';
+function FoundLocationForm({ requestBody, goBack, initialCoordinates }) {
+  const [kept_coordinates, setKeptCoordinates] = useState(
+    initialCoordinates || [37.5665, 126.978]
+  ); // 초기 값 설정
+  const URL = "https://caring-sadly-marmoset.ngrok-free.app";
 
   useEffect(() => {
     if (initialCoordinates) {
@@ -16,31 +17,34 @@ function FoundLocationForm({ requestBody, goBack, setCoordinates, initialCoordin
       // Fetch stronghold markers
       const strongholdData = await fetchStrongholdMarkers();
       console.log("Returned Data from API:", strongholdData);
-  
+
       if (!strongholdData || !strongholdData.id) {
         console.error("Invalid stronghold data received:", strongholdData);
         return;
       }
-  
+
       const stronghold_id = strongholdData.id;
-  
+
       // Convert kept_coordinates to an array if necessary
       const formattedKeptCoordinates = Array.isArray(kept_coordinates)
         ? kept_coordinates
         : [kept_coordinates.lat, kept_coordinates.lng];
-  
+
       // Create the updated request body
       const updatedRequestBody = {
         ...requestBody,
         stronghold_id: stronghold_id,
         kept_coordinates: formattedKeptCoordinates, // Ensure it is an array
       };
-  
-      console.log("Updated request body with kept_coordinates -> ", updatedRequestBody);
-  
+
+      console.log(
+        "Updated request body with kept_coordinates -> ",
+        updatedRequestBody
+      );
+
       // POST /post/found 요청
       const foundUrl = `${URL}/post/found`;
-  
+
       const response = await fetch(foundUrl, {
         method: "POST",
         credentials: "include",
@@ -49,7 +53,7 @@ function FoundLocationForm({ requestBody, goBack, setCoordinates, initialCoordin
         },
         body: JSON.stringify(updatedRequestBody),
       });
-  
+
       if (response.ok) {
         const data = await response.json();
         console.log("POST /post/found response:", data);
@@ -64,24 +68,24 @@ function FoundLocationForm({ requestBody, goBack, setCoordinates, initialCoordin
     }
   };
 
-// API 호출 메서드
-const fetchStrongholdMarkers = async () => {
+  // API 호출 메서드
+  const fetchStrongholdMarkers = async () => {
     const formattedKeptCoordinates = Array.isArray(kept_coordinates)
       ? kept_coordinates
       : [kept_coordinates.lat, kept_coordinates.lng];
-  
+
     const [lat, lng] = formattedKeptCoordinates;
-  
+
     const url = `${URL}/marker/stronghold`;
     const payload = new URLSearchParams({
-        name: requestBody.title,
-        description: requestBody.description,
-        lat: lat,
-        lng: lng,
-      });
-  
+      name: requestBody.title,
+      description: requestBody.description,
+      lat: lat,
+      lng: lng,
+    });
+
     console.log("POST Payload:", payload);
-  
+
     try {
       const response = await fetch(url, {
         method: "POST", // POST 요청
@@ -91,7 +95,7 @@ const fetchStrongholdMarkers = async () => {
         },
         body: payload.toString(),
       });
-  
+
       if (response.ok) {
         const data = await response.json();
         console.log("Fetched stronghold markers:", data);
@@ -102,7 +106,7 @@ const fetchStrongholdMarkers = async () => {
     } catch (error) {
       console.error("Error fetching markers:", error);
     }
-  
+
     return null; // 에러 발생 시 null 반환
   };
 
@@ -155,17 +159,17 @@ const titleStyle = {
 };
 
 const buttonStyle = {
-    padding: "15px 20px",
-    border: "none",
-    borderRadius: "6px",
-    backgroundColor: "#4CAF50",
-    color: "white",
-    cursor: "pointer",
-    width: "1000%",
-    textAlign: "center",
-    maxWidth: "300px",
-    marginTop: "20px",
-  };
+  padding: "15px 20px",
+  border: "none",
+  borderRadius: "6px",
+  backgroundColor: "#4CAF50",
+  color: "white",
+  cursor: "pointer",
+  width: "1000%",
+  textAlign: "center",
+  maxWidth: "300px",
+  marginTop: "20px",
+};
 
 const backButtonStyle = {
   position: "absolute",

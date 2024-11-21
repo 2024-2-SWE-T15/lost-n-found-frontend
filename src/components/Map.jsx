@@ -1,14 +1,21 @@
-import { Map, MapMarker, useMap } from "react-kakao-maps-sdk";
+import { Map, MapMarker } from "react-kakao-maps-sdk";
 import { useEffect, useState } from "react";
 
-import { SIDEBAR_WIDTH_PX } from "./Sidebar";
+import CustomMarker from "./CustomMarker";
 import { fetchMarkers } from "../api";
+import { marker_types } from "../constants/map_const";
 import styled from "styled-components";
 import { useKakaoLoader } from "../hooks/useKakaoLoader";
 
-export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordinates, isMarkerFixed, setPlacementCoordinates }) {
+export default function KakaoMap({
+  selectedMarkerId,
+  clickedPosition,
+  onMarkerClick,
+  onMapClick,
+  setSidebarContent,
+  isMarkerFixed,
+}) {
   const isSdkLoaded = useKakaoLoader();
-  const [selectedMarkerId, setSelectedMarkerId] = useState("");
   const [markers, setMarkers] = useState([]);
   const [isMarkerLoaded, setIsMarkerLoaded] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(3);
@@ -16,45 +23,6 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordina
     lat: 37.293976,
     lng: 126.975059,
   });
-  const [clickedPosition, setClickedPosition] = useState(null);
-  const [placementMarkerPosition, setPlacementMarkerPosition] = useState(null); // 찾은 사람이 물건을 둘 위치
-
-  // 지도 클릭 시 마커 표시
-  const handleMapClick = (_target, mouseEvent) => {
-    const lat = mouseEvent.latLng.getLat();
-    const lng = mouseEvent.latLng.getLng();
-
-    if (isMarkerFixed) {
-      // Handle special marker placement when isMarkerFixed is true
-      const newPosition = { lat, lng };
-      setPlacementMarkerPosition(newPosition);
-      if (setPlacementCoordinates) {
-        setPlacementCoordinates(newPosition); // Main에 전달
-      }
-      // console.log("New marker coordinates (Fixed Mode):", { lat, lng });
-    } else {
-      // console.log("Clicked position:", { lat, lng });
-
-      if (setCoordinates) {
-        setCoordinates([lat, lng]);
-      }
-
-      // Check for overlap with existing markers
-      const overlappingMarker = markers.find(
-        (marker) =>
-          Math.abs(marker.latlng.lat - lat) < 0.0001 &&
-          Math.abs(marker.latlng.lng - lng) < 0.0001
-      );
-
-      if (overlappingMarker) {
-        setSelectedMarkerId(overlappingMarker.id);
-        setClickedPosition(null); // Clear clicked position marker
-      } else {
-        setSelectedMarkerId(""); // Deselect any existing markers
-        setClickedPosition({ lat, lng });
-      }
-    }
-  };
 
   const handleLostButtonClick = () => {
     setSidebarContent("lost");
@@ -67,10 +35,12 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordina
   const updateMarkers = async () => {
     try {
       const markers = await fetchMarkers(mapCenter.lat, mapCenter.lng, 10000);
+
       setMarkers(
         markers.map((marker) => ({
           ...marker,
           content: <div style={{ color: "#000" }}>{marker.title}</div>,
+          type: marker_types.KEPT_IDLE_PHASE, //임시
         }))
       );
     } catch (error) {
@@ -83,61 +53,12 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordina
   useEffect(() => {
     try {
       updateMarkers();
-      // console.log("드래그 후 새로운 중심좌표:", mapCenter);
-      // console.log("드래그 후 새로운 level:", zoomLevel);
     } catch (error) {
       console.error("마커 데이터를 불러오는데 실패했습니다:", error);
     } finally {
       setIsMarkerLoaded(true);
     }
   }, [mapCenter, zoomLevel]);
-
-  const EventMarkerContainer = ({ position, content, id }) => {
-    const map = useMap();
-    const projection = map.getProjection();
-    // console.log(position);
-    function MarkerClickFunc(position, id) {
-      setSelectedMarkerId(id);
-      setClickedPosition(null); // 기존에 생성되어있는 마커를 클릭하면 새로운 마커는 없애줍니다.
-      onMarkerClick(id);
-
-      setTimeout(() => {
-        // click event causes the sidebar to open, so we need to adjust the map center
-        const sidebarTopLeft = projection.coordsFromContainerPoint(
-          // eslint-disable-next-line no-undef
-          new kakao.maps.Point(0, 0)
-        );
-        const sidebarTopRight = projection.coordsFromContainerPoint(
-          // eslint-disable-next-line no-undef
-          new kakao.maps.Point(SIDEBAR_WIDTH_PX, 0)
-        );
-
-        const latOffset =
-          (sidebarTopLeft.getLat() - sidebarTopRight.getLat()) / 2;
-        const lngOffset =
-          (sidebarTopLeft.getLng() - sidebarTopRight.getLng()) / 2;
-
-        // eslint-disable-next-line no-undef
-        const newPosition = new kakao.maps.LatLng(
-          position.getLat() + latOffset,
-          position.getLng() + lngOffset
-        );
-
-        map.panTo(newPosition);
-      }, 10);
-    }
-
-    return (
-      <MapMarker
-        position={position}
-        onClick={(marker) => {
-          MarkerClickFunc(marker.getPosition(), id);
-        }}
-      >
-        {selectedMarkerId === id && content}
-      </MapMarker>
-    );
-  };
 
   if (!isSdkLoaded || !isMarkerLoaded) {
     return (
@@ -156,11 +77,16 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordina
           height: "100%",
         }}
         level={zoomLevel}
-        onClick={handleMapClick} // Handle map clicks
+        onClick={(_, mouseEvent) => {
+          const lat = mouseEvent.latLng.getLat();
+          const lng = mouseEvent.latLng.getLng();
+
+          onMapClick(lat, lng);
+        }}
         onDragEnd={(map) => {
-          if (isMarkerFixed) return; // Prevent dragging if marker is fixed
           const latlng = map.getCenter();
           const level = map.getLevel();
+
           setZoomLevel(level);
           setMapCenter({ lat: latlng.getLat(), lng: latlng.getLng() });
         }}
@@ -224,25 +150,17 @@ export default function KakaoMap({ onMarkerClick, setSidebarContent, setCoordina
             </div>
           </MapMarker>
         )}
-  
-        {/* Display special marker when isMarkerFixed is true */}
-        {isMarkerFixed && placementMarkerPosition && (
-          <MapMarker
-            position={placementMarkerPosition}
-            image={{
-              src: "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png", // Example marker (change color/image as needed)
-              size: { width: 34, height: 44 },
-            }}
-          />
-        )}
-  
+
         {/* Always display existing markers */}
         {markers.map((value) => (
-          <EventMarkerContainer
+          <CustomMarker
             key={value.id}
-            position={value.latlng}
-            content={value.content}
             id={value.id}
+            type={value.type}
+            position={value.latlng}
+            isPopupOpened={selectedMarkerId === value.id}
+            popupContent={value.content}
+            onMarkerClick={onMarkerClick}
           />
         ))}
       </Map>
