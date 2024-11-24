@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { submitLostItem } from "../api";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 
 function LostForm({ coordinates }) {
   const [title, setTitle] = useState("");
@@ -10,6 +11,8 @@ function LostForm({ coordinates }) {
   const [birthDate, setBirthDate] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
   const [base64DataArray, setBase64DataArray] = useState([]);
+
+  const navigate = useNavigate(); // Hook for redirection
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -41,9 +44,19 @@ function LostForm({ coordinates }) {
         phoneNumber,
         birthDate,
       });
+
       console.log("Response from API:", response);
+
+      // Redirect to /post/:postId after successful submission
+      if (response?.id) {
+        navigate(`/post/${response.id}`);
+      } else {
+        console.error("Post ID not found in the response:", response);
+        alert("등록에 문제가 발생했습니다.");
+      }
     } catch (error) {
       console.error("Error sending request:", error);
+      alert("오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
 
