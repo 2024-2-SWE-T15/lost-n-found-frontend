@@ -81,3 +81,35 @@ export const submitLostItem = async ({
     throw error;
   }
 };
+
+export const createStrongholdMarker = async (payload) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/marker/stronghold`, payload, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      withCredentials: true,
+    });
+    console.log("Fetched stronghold markers:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating stronghold marker:", error.response || error.message);
+    throw error;
+  }
+};
+
+export const registerFoundItem = async (payload) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/post/found`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      withCredentials: true,
+    });
+    console.log("POST /post/found response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error registering found item:", error.response || error.message);
+    throw error;
+  }
+};
