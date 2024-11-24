@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { submitLostItem } from "../api";
 
 function LostForm({ coordinates }) {
   const [title, setTitle] = useState("");
@@ -8,8 +9,6 @@ function LostForm({ coordinates }) {
   const [birthDate, setBirthDate] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
   const [base64DataArray, setBase64DataArray] = useState([]);
-
-  const URL = 'https://caring-sadly-marmoset.ngrok-free.app'; // API base URL
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -31,35 +30,17 @@ function LostForm({ coordinates }) {
   };
 
   const handleFormSubmit = async () => {
-    const categoryArray = category.split(" ");
-    const requestBody = {
-      title: title,
-      coordinates: coordinates || [null, null], // Use provided coordinates
-      hashtags: categoryArray,
-      description: details,
-      photos: base64DataArray,
-      personal_idlist: {
-        phone: phoneNumber,
-        birth: birthDate,
-      },
-    };
-
     try {
-      const response = await fetch(`${URL}/post/lost`, {
-        method: "POST",
-        credentials: 'include',
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
+      const response = await submitLostItem({
+        title,
+        coordinates,
+        category,
+        description: details,
+        base64DataArray,
+        phoneNumber,
+        birthDate,
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const responseData = await response.json();
-      console.log("Response from API:", responseData);
+      console.log("Response from API:", response);
     } catch (error) {
       console.error("Error sending request:", error);
     }
