@@ -6,7 +6,9 @@ import Main from "./pages/Main";
 import MyPage from "./pages/MyPage";
 import NotFound from "./pages/NotFound";
 import Post from "./pages/Post";
+import { Provider } from "react-redux";
 import { createGlobalStyle } from "styled-components";
+import mainPageStore from "./store";
 import reset from "styled-reset";
 
 const GlobalStyle = createGlobalStyle`
@@ -65,7 +67,14 @@ function App() {
     <>
       <GlobalStyle />
       <Routes>
-        <Route path="/" element={<Main />} />
+        <Route
+          path="/"
+          element={
+            <Provider store={mainPageStore}>
+              <Main />
+            </Provider>
+          }
+        />
         <Route path="/login" element={<Login />} />
         <Route path="/my" element={<MyPage />} />
         <Route path="/post/:postId" element={<Post />} />
