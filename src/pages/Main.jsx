@@ -1,50 +1,72 @@
+import {
+  marker_types,
+  phases,
+  temp_marker_types,
+} from "../constants/map_const";
+
+import FoundForm from "../components/FoundForm";
+import FoundLocationForm from "../components/FoundLocationForm";
 import KakaoMap from "../components/Map";
+import LostForm from "../components/LostForm";
 import Sidebar from "../components/Sidebar";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { phases , marker_types, temp_marker_types} from "../constants/map_const";
 
 function Main() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [phase, setPhase] = useState(phases.IDLE)
+  const [clickedPosition, setClickedPosition] = useState(null);
+  const [sidebarContent, setSidebarContent] = useState("");
+  const [coordinates, setCoordinates] = useState([null, null]);
+  const [foundFormData, setFoundFormData] = useState(null);
+  const [placementCoordinates, setPlacementCoordinates] = useState(null); // 분실물 놔둘 위치 (FoundLostCocation)
+  const [phase, setPhase] = useState(phases.IDLE);
 
   const navigate = useNavigate();
-  console.log(phase)
+  console.log(phase);
+
+  // 지도 클릭 시 마커 표시
+  const handleMapClick = (lat, lng) => {
+    if (foundFormData) {
+      // Handle special marker placement when isMarkerFixed is true
+      const newPosition = { lat, lng };
+      setPlacementCoordinates(newPosition);
+    } else {
+      setCoordinates([lat, lng]);
+      setSelectedMarkerId(""); // Deselect any existing markers
+      setClickedPosition({ lat, lng });
+    }
+  };
 
   function HandleMarkerClick(id, marker_type) {
-
     setSelectedMarkerId(id);
+    setClickedPosition(null); // 기존에 생성되어있는 마커를 클릭하면 새로운 마커는 없애줍니다.
 
-    switch(phase)
-    {
+    switch (phase) {
       case phases.IDLE:
-        if(id === null) //click ground
-        {
+        if (id === null) {
+          //click ground
           setIsSidebarOpen(false);
-        }
-        else if(marker_type in marker_types) // click existing marker
-        {
+        } else if (marker_type in marker_types) {
+          // click existing marker
           setIsSidebarOpen(true);
-        }
-        else if(marker_type === temp_marker_types.TEMP_UNSET) //click new temp marker
-        {
-          console.log("choose lost or found")
+        } else if (marker_type === temp_marker_types.TEMP_UNSET) {
+          //click new temp marker
+          console.log("choose lost or found");
           setPhase(phases.CHOOSE_LOST_OR_FOUND);
           setIsSidebarOpen(true);
         }
-        
+
         break;
       case phases.CHOOSE_LOST_OR_FOUND:
-        if(id == null) //click ground 
-        {
+        if (id == null) {
+          //click ground
           setPhase(phases.IDLE);
           setIsSidebarOpen(false);
-        }
-        else//click marker
-        {
+        } //click marker
+        else {
           setSelectedMarkerId(id);
           setIsSidebarOpen(true);
         }
@@ -56,12 +78,11 @@ function Main() {
         break;
 
       case phases.ADD_KEEPED_MARKER:
-         break;
-
-      default:
-        console.log("phase error")
         break;
 
+      default:
+        console.log("phase error");
+        break;
     }
   }
 
@@ -85,17 +106,39 @@ function Main() {
       </TopBar>
       <ContentContainer>
         <MapContainer>
-          <KakaoMap 
+          {/* Pass setSidebarContent as a prop */}
+          <KakaoMap
             selectedMarkerId={selectedMarkerId}
-            phase={phase}
-            onMarkerClick={HandleMarkerClick} />
+            onMarkerClick={HandleMarkerClick}
+            onMapClick={handleMapClick}
+            clickedPosition={clickedPosition}
+            setSidebarContent={setSidebarContent}
+            isMarkerFixed={!!foundFormData}
+          />
         </MapContainer>
         <Sidebar
           isSidebarOpen={isSidebarOpen}
           onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         >
-          {/* TODO: put dynamic content here */}
-          {selectedMarkerId}
+          {/* Conditional rendering logic */}
+          {sidebarContent === "lost" ? (
+            <LostForm coordinates={coordinates} />
+          ) : sidebarContent === "found" ? (
+            foundFormData ? (
+              <FoundLocationForm
+                requestBody={foundFormData}
+                goBack={() => setFoundFormData(null)} // Pass the goBack handler
+                initialCoordinates={placementCoordinates}
+              />
+            ) : (
+              <FoundForm
+                setFoundFormData={setFoundFormData}
+                coordinates={coordinates}
+              />
+            )
+          ) : (
+            <p>기본 Sidebar 콘텐츠: {selectedMarkerId}</p>
+          )}
         </Sidebar>
       </ContentContainer>
     </Container>

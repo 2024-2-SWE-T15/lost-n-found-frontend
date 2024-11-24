@@ -24,7 +24,9 @@ const Sidebar = ({ children, isSidebarOpen, onSidebarToggle }) => {
 
   return (
     <SidebarContainer $isOpen={isSidebarOpen} $isResizing={isResizing}>
-      <Content>{children}</Content>
+      <Content>
+        {children || <p>이곳에 예시 문구가 표시됩니다. 이 문구는 기본 내용입니다.</p>}
+      </Content>
       <MenuButton onClick={onSidebarToggle} $isOpen={isSidebarOpen} />
     </SidebarContainer>
   );

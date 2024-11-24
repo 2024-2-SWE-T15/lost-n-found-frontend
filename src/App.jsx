@@ -39,7 +39,7 @@ function App() {
         });
 
         if (response.status === 200) {
-          console.log('인증 성공: 사용자가 인증되었습니다.');
+          // console.log('인증 성공: 사용자가 인증되었습니다.');
           setIsAuthenticated(true);
         } else {
           console.log('인증 실패: 응답 코드', response.status);
@@ -58,7 +58,6 @@ function App() {
 
   if (isAuthenticated === null) {
     // 로딩 중 상태 표시
-    console.log('인증 상태 확인 중...');
     return <div>로딩 중...</div>;
   }
 

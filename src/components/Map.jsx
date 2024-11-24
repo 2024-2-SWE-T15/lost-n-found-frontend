@@ -1,15 +1,20 @@
-import { Map, MapMarker, useMap } from "react-kakao-maps-sdk";
+import { Map, MapMarker } from "react-kakao-maps-sdk";
 import { useEffect, useState } from "react";
-import CustomMarker from "./CustomMarker";
 
-import { SIDEBAR_WIDTH_PX } from "./Sidebar";
+import CustomMarker from "./CustomMarker";
 import { fetchMarkers } from "../api";
+import { marker_types } from "../constants/map_const";
 import styled from "styled-components";
 import { useKakaoLoader } from "../hooks/useKakaoLoader";
-import { marker_types, temp_marker_types } from "../constants/map_const";
 
-
-export default function KakaoMap({selectedMarkerId, phase, onMarkerClick }) {
+export default function KakaoMap({
+  selectedMarkerId,
+  clickedPosition,
+  onMarkerClick,
+  onMapClick,
+  setSidebarContent,
+  isMarkerFixed,
+}) {
   const isSdkLoaded = useKakaoLoader();
   const [markers, setMarkers] = useState([]);
   const [isMarkerLoaded, setIsMarkerLoaded] = useState(false);
@@ -19,16 +24,23 @@ export default function KakaoMap({selectedMarkerId, phase, onMarkerClick }) {
     lng: 126.975059,
   });
 
+  const handleLostButtonClick = () => {
+    setSidebarContent("lost");
+  };
+
+  const handleFoundButtonClick = () => {
+    setSidebarContent("found");
+  };
+
   const updateMarkers = async () => {
     try {
       const markers = await fetchMarkers(mapCenter.lat, mapCenter.lng, 10000);
 
-      
       setMarkers(
         markers.map((marker) => ({
           ...marker,
           content: <div style={{ color: "#000" }}>{marker.title}</div>,
-          type: marker_types.KEPT_IDLE_PHASE //임시
+          type: marker_types.KEPT_IDLE_PHASE, //임시
         }))
       );
     } catch (error) {
@@ -37,44 +49,16 @@ export default function KakaoMap({selectedMarkerId, phase, onMarkerClick }) {
     }
   };
 
-  //marker add test(local)
-  const addTempMarker = (lat, lng, temp_marker_type)=>
-  {
-    if(temp_marker_type == null || !(temp_marker_type in temp_marker_types))
-    {
-      console.error("temp_marker_type is not defined");
-      return;
-    }
-    const new_marker = {
-      id: markers.length,
-      latlng: { lat: lat, lng: lng },
-      content: <div style={{ color: "#000" }}>new marker</div>,
-      type: temp_marker_type
-    }
-
-    setMarkers([...markers, new_marker]);
-    return new_marker;
-  }
-
-  //marker remove test(local)
-  const removeTempMarkerByID = (temp_marker_type) =>
-  {
-    setMarkers(markers.filter((marker) => marker.type !== temp_marker_type));
-  }
-
   //드래그, 줌 했을경우 마커 데이터 가져오기
   useEffect(() => {
     try {
       updateMarkers();
-      console.log("드래그 후 새로운 중심좌표:", mapCenter);
-      console.log("드래그 후 새로운 level:", zoomLevel);
     } catch (error) {
       console.error("마커 데이터를 불러오는데 실패했습니다:", error);
     } finally {
       setIsMarkerLoaded(true);
     }
   }, [mapCenter, zoomLevel]);
-
 
   if (!isSdkLoaded || !isMarkerLoaded) {
     return (
@@ -94,35 +78,80 @@ export default function KakaoMap({selectedMarkerId, phase, onMarkerClick }) {
         }}
         level={zoomLevel}
         onClick={(_, mouseEvent) => {
-          //change phase test
-          if(phase == "IDLE")
-          {
-            const temp_marker = addTempMarker(mouseEvent.latLng.getLat(), mouseEvent.latLng.getLng(), temp_marker_types.TEMP_UNSET);
-            onMarkerClick(temp_marker.id, temp_marker.type);
-            
-          }
-          else if (phase == "CHOOSE_LOST_OR_FOUND")
-          {
-            removeTempMarkerByID(temp_marker_types.TEMP_UNSET); 
-            onMarkerClick(null, null);
-          }
-          
+          const lat = mouseEvent.latLng.getLat();
+          const lng = mouseEvent.latLng.getLng();
+
+          onMapClick(lat, lng);
         }}
         onDragEnd={(map) => {
           const latlng = map.getCenter();
           const level = map.getLevel();
-          const newCenter = {
-            lat: latlng.getLat(),
-            lng: latlng.getLng(),
-          };
-          
+
           setZoomLevel(level);
-          setMapCenter(newCenter);
+          setMapCenter({ lat: latlng.getLat(), lng: latlng.getLng() });
         }}
         onZoomChanged={(map) => {
+          if (isMarkerFixed) return; // Prevent zooming if marker is fixed
           setZoomLevel(map.getLevel());
         }}
       >
+        {/* Display marker for clicked position regardless of isMarkerFixed state */}
+        {clickedPosition && (
+          <MapMarker
+            position={clickedPosition}
+            image={{
+              src: "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png",
+              size: { width: 34, height: 44 },
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "10px",
+                width: "200px",
+                padding: "10px",
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                backgroundColor: "white",
+                boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.3)",
+              }}
+            >
+              <button
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: "#4CAF50",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+                onClick={() => {
+                  if (!isMarkerFixed) handleLostButtonClick();
+                }}
+              >
+                여기서 잃어버림
+              </button>
+              <button
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: "#ff5733",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+                onClick={() => {
+                  if (!isMarkerFixed) handleFoundButtonClick();
+                }}
+              >
+                여기서 찾았음
+              </button>
+            </div>
+          </MapMarker>
+        )}
+
+        {/* Always display existing markers */}
         {markers.map((value) => (
           <CustomMarker
             key={value.id}
@@ -132,7 +161,6 @@ export default function KakaoMap({selectedMarkerId, phase, onMarkerClick }) {
             isPopupOpened={selectedMarkerId === value.id}
             popupContent={value.content}
             onMarkerClick={onMarkerClick}
-            
           />
         ))}
       </Map>
