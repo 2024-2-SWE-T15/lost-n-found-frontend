@@ -9,9 +9,9 @@ import { openSidebar, setActiveMarkerId, setMarkerMap } from "./store";
 import { selectMap, selectScene } from "../selector";
 
 export const refreshMap = (lat, lng) => async (dispatch, getState) => {
-  const scene = selectScene(getState());
+  const sceneOnDispatch = selectScene(getState());
 
-  if (scene === SCENE.INITIAL) {
+  if (sceneOnDispatch === SCENE.INITIAL) {
     // fetch markers
     const markers = await fetchMarkers(lat, lng, 10000);
     const newMarkerMap = markers.reduce((acc, marker) => {
@@ -23,11 +23,14 @@ export const refreshMap = (lat, lng) => async (dispatch, getState) => {
       return acc;
     }, {});
 
-    const { markerMap: oldMarkerMap } = selectMap(getState());
-    newMarkerMap[CLICKED_MARKER_ID] = oldMarkerMap[CLICKED_MARKER_ID];
+    const sceneOnUpdate = selectScene(getState());
+    if (sceneOnUpdate === sceneOnDispatch) {
+      const { markerMap: oldMarkerMap } = selectMap(getState());
+      newMarkerMap[CLICKED_MARKER_ID] = oldMarkerMap[CLICKED_MARKER_ID];
 
-    dispatch(setMarkerMap(newMarkerMap));
-  } else if (scene === SCENE.KEPT_LOCATION_PICKER) {
+      dispatch(setMarkerMap(newMarkerMap));
+    }
+  } else if (sceneOnDispatch === SCENE.KEPT_LOCATION_PICKER) {
     // fetch markers
     const markers = await fetchStrongholdMarkers(lat, lng, 10000);
     const newMarkerMap = markers.reduce((acc, marker) => {
@@ -43,7 +46,10 @@ export const refreshMap = (lat, lng) => async (dispatch, getState) => {
     newMarkerMap[CLICKED_MARKER_ID] = oldMarkerMap[CLICKED_MARKER_ID];
     newMarkerMap[PINNED_MARKER_ID] = oldMarkerMap[PINNED_MARKER_ID];
 
-    dispatch(setMarkerMap(newMarkerMap));
+    const sceneOnUpdate = selectScene(getState());
+    if (sceneOnUpdate === sceneOnDispatch) {
+      dispatch(setMarkerMap(newMarkerMap));
+    }
   }
 };
 
@@ -66,7 +72,14 @@ export const clickMarker = (markerId) => (dispatch, getState) => {
 };
 
 export const clickMap = (lat, lng) => (dispatch, getState) => {
-  const { activeMarkerId, markerMap } = selectMap(getState());
+  const state = getState();
+  const scene = selectScene(state);
+  const { activeMarkerId, markerMap } = selectMap(state);
+
+  if (scene === SCENE.LOST_DETAILS_FORM || scene === SCENE.FOUND_DETAILS_FORM) {
+    // clicked marker has no use in form scenes
+    return;
+  }
 
   if (activeMarkerId) {
     dispatch(setActiveMarkerId(null));

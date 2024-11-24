@@ -5,6 +5,12 @@ import {
   SCENE,
 } from "../store";
 import {
+  clearFormData,
+  setActiveMarkerId,
+  setMarkerMap,
+  setScene,
+} from "./store";
+import {
   createStrongholdMarker,
   registerFoundItem,
   submitLostItem,
@@ -16,7 +22,6 @@ import {
   selectPinnedMarker,
   selectScene,
 } from "../selector";
-import { setActiveMarkerId, setMarkerMap, setScene } from "./store";
 
 const enterForm = (dispatch, getState, isLost) => {
   const { activeMarkerId, markerMap: oldMarkerMap } = selectMap(getState());
@@ -49,10 +54,11 @@ export const goBackOnForm = () => (dispatch, getState) => {
   switch (scene) {
     case SCENE.LOST_DETAILS_FORM:
     case SCENE.FOUND_DETAILS_FORM: {
+      dispatch(clearFormData());
       dispatch(setMarkerMap({}));
       dispatch(setActiveMarkerId(null));
       dispatch(setScene(SCENE.INITIAL));
-      // dispatch(refreshMap(...));
+
       break;
     }
     case SCENE.KEPT_LOCATION_PICKER:
@@ -109,7 +115,7 @@ export const confirmFoundLocation = () => async (_, getState) => {
   try {
     let strongholdId;
     try {
-      strongholdId = createStrongholdIfNeeded(
+      strongholdId = await createStrongholdIfNeeded(
         activeMarker,
         // @ts-ignore
         formData.title,
@@ -149,7 +155,7 @@ const createStrongholdIfNeeded = async (marker, title, description) => {
       return null;
     case MARKER_TYPE.STRONGHOLD:
       // preexisting stronghold
-      return marker.data.stronghold_id;
+      return marker.data.id;
     case MARKER_TYPE.CLICKED: {
       const strongholdData = await createStrongholdMarker({
         name: title,
