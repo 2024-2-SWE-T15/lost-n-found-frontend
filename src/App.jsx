@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 import Login from "./pages/Login";
 import Main from "./pages/Main";
@@ -7,6 +7,7 @@ import MyPage from "./pages/MyPage";
 import NotFound from "./pages/NotFound";
 import Post from "./pages/Post";
 import { Provider } from "react-redux";
+import { checkLogin } from "./api";
 import { createGlobalStyle } from "styled-components";
 import mainPageStore from "./store";
 import reset from "styled-reset";
@@ -35,21 +36,10 @@ function App() {
   useEffect(() => {
     const verifyAuth = async () => {
       try {
-        const response = await fetch('https://caring-sadly-marmoset.ngrok-free.app/auth/verification', {
-          method: 'GET',
-          credentials: 'include', // 쿠키나 인증 토큰이 필요한 경우
-        });
-
-        if (response.status === 200) {
-          // console.log('인증 성공: 사용자가 인증되었습니다.');
-          setIsAuthenticated(true);
-        } else {
-          console.log('인증 실패: 응답 코드', response.status);
-          setIsAuthenticated(false);
-          navigate("/login");
-        }
+        await checkLogin();
+        setIsAuthenticated(true);
       } catch (error) {
-        console.error('인증 확인 중 오류 발생:', error);
+        console.error("인증 확인 중 오류 발생:", error);
         setIsAuthenticated(false);
         navigate("/login");
       }

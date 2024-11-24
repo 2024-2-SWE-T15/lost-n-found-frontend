@@ -1,79 +1,31 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { confirmFoundLocation, goBackOnForm } from "../actions";
+
 import styled from "styled-components";
-import { createStrongholdMarker, registerFoundItem } from "../api";
+import { useDispatch } from "react-redux";
 
-function FoundLocationForm({ requestBody, goBack, initialCoordinates }) {
-  const [kept_coordinates, setKeptCoordinates] = useState(initialCoordinates || [37.5665, 126.9780]); // 초기 값 설정
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (initialCoordinates) {
-      setKeptCoordinates(initialCoordinates);
-    }
-  }, [initialCoordinates]);
-
-  const handleRegisterClick = async () => {
-    try {
-      const [lat, lng] = Array.isArray(kept_coordinates)
-        ? kept_coordinates
-        : [kept_coordinates.lat, kept_coordinates.lng];
-
-      const strongholdPayload = new URLSearchParams({
-        name: requestBody.title,
-        description: requestBody.description,
-        lat: lat,
-        lng: lng,
-      }).toString();
-
-      const strongholdData = await createStrongholdMarker(strongholdPayload);
-      console.log("Stronghold Marker API Response:", strongholdData);
-
-      if (!strongholdData || !strongholdData.id) {
-        console.error("Invalid stronghold data:", strongholdData);
-        alert("강력 마커 생성에 실패했습니다.");
-        return;
-      }
-
-      const stronghold_id = strongholdData.id;
-
-      const formattedKeptCoordinates = Array.isArray(kept_coordinates)
-        ? kept_coordinates
-        : [kept_coordinates.lat, kept_coordinates.lng];
-
-      const updatedRequestBody = {
-        ...requestBody,
-        stronghold_id: stronghold_id,
-        kept_coordinates: formattedKeptCoordinates,
-      };
-
-      console.log("Updated Request Body:", updatedRequestBody);
-
-      const responseData = await registerFoundItem(updatedRequestBody);
-
-      const postId = responseData?.id;
-      if (postId) {
-        navigate(`/post/${postId}`);
-      } else {
-        console.error("Post ID is missing in the API response:", responseData);
-        alert("등록에 문제가 발생했습니다.");
-      }
-    } catch (error) {
-      console.error("Error during registration process:", error);
-      alert("오류가 발생했습니다. 다시 시도해주세요.");
-    }
-  };
+function FoundLocationForm() {
+  const dispatch = useDispatch();
 
   return (
     <Container>
-      <BackButton onClick={goBack}>
+      <BackButton
+        onClick={() => {
+          // @ts-ignore
+          dispatch(goBackOnForm());
+        }}
+      >
         &#8592; 뒤로
       </BackButton>
       <Header>
         <Title>물건을 보관할 장소를 지정해주세요</Title>
       </Header>
       <Content>
-        <RegisterButton onClick={handleRegisterClick}>
+        <RegisterButton
+          onClick={() => {
+            // @ts-ignore
+            dispatch(confirmFoundLocation());
+          }}
+        >
           등록하기
         </RegisterButton>
       </Content>
