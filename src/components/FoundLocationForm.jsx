@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { createStrongholdMarker, registerFoundItem } from "../api";
 
-function FoundLocationForm({ requestBody, goBack, setCoordinates, initialCoordinates }) {
+function FoundLocationForm({ requestBody, goBack, initialCoordinates }) {
   const [kept_coordinates, setKeptCoordinates] = useState(initialCoordinates || [37.5665, 126.9780]); // 초기 값 설정
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (initialCoordinates) {
@@ -13,10 +15,10 @@ function FoundLocationForm({ requestBody, goBack, setCoordinates, initialCoordin
 
   const handleRegisterClick = async () => {
     try {
-      // 강력 마커 생성
       const [lat, lng] = Array.isArray(kept_coordinates)
         ? kept_coordinates
         : [kept_coordinates.lat, kept_coordinates.lng];
+
       const strongholdPayload = new URLSearchParams({
         name: requestBody.title,
         description: requestBody.description,
@@ -25,33 +27,39 @@ function FoundLocationForm({ requestBody, goBack, setCoordinates, initialCoordin
       }).toString();
 
       const strongholdData = await createStrongholdMarker(strongholdPayload);
-      console.log("Returned Data from API:", strongholdData);
+      console.log("Stronghold Marker API Response:", strongholdData);
 
       if (!strongholdData || !strongholdData.id) {
-        console.error("Invalid stronghold data received:", strongholdData);
+        console.error("Invalid stronghold data:", strongholdData);
+        alert("강력 마커 생성에 실패했습니다.");
         return;
       }
 
       const stronghold_id = strongholdData.id;
 
-      // 물건 등록 요청 본문 생성
       const formattedKeptCoordinates = Array.isArray(kept_coordinates)
         ? kept_coordinates
         : [kept_coordinates.lat, kept_coordinates.lng];
+
       const updatedRequestBody = {
         ...requestBody,
         stronghold_id: stronghold_id,
-        kept_coordinates: formattedKeptCoordinates, // Ensure it is an array
+        kept_coordinates: formattedKeptCoordinates,
       };
 
-      console.log("Updated request body with kept_coordinates -> ", updatedRequestBody);
+      console.log("Updated Request Body:", updatedRequestBody);
 
-      // 물건 등록 API 호출
       const responseData = await registerFoundItem(updatedRequestBody);
-      alert("등록이 완료되었습니다."); // 성공 알림
-      console.log("Response from /post/found:", responseData);
+
+      const postId = responseData?.id;
+      if (postId) {
+        navigate(`/post/${postId}`);
+      } else {
+        console.error("Post ID is missing in the API response:", responseData);
+        alert("등록에 문제가 발생했습니다.");
+      }
     } catch (error) {
-      console.error("Error during handleRegisterClick:", error);
+      console.error("Error during registration process:", error);
       alert("오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
