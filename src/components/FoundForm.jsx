@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Spacer } from "./Spacer";
+import styled from "styled-components";
 
 function FoundForm({ setFoundFormData, coordinates }) {
   const [title, setTitle] = useState('');
@@ -48,122 +48,110 @@ function FoundForm({ setFoundFormData, coordinates }) {
   };
 
   return (
-    <div style={containerStyle}>
-      <h1 style={titleStyle}>발견한 물건의 정보를 입력해주세요</h1>
-      <input
+    <Container>
+      <Title>발견한 물건의 정보를 입력해주세요</Title>
+      <Input
         type="text"
         placeholder="제목"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        style={inputStyle}
       />
-      <input
+      <Input
         type="text"
         placeholder="상세"
         value={details}
         onChange={(e) => setDetails(e.target.value)}
-        style={inputStyle}
       />
-      <input
+      <Input
         type="text"
         placeholder="카테고리"
         value={category}
         onChange={(e) => setCategory(e.target.value)}
-        style={inputStyle}
       />
-      <input
+      <Input
         type="tel"
         placeholder="전화번호 (선택사항)"
         value={phoneNumber}
         onChange={(e) => setPhoneNumber(e.target.value)}
-        style={inputStyle}
       />
-      {/* Additional birth date input */}
-      <input
+      <Input
         type="date"
         placeholder="생년월일 (선택사항)"
         value={birthDate}
         onChange={(e) => setBirthDate(e.target.value)}
-        style={inputStyle}
       />
-      <input
+      <HiddenFileInput
         type="file"
         id="imageUpload"
         accept="image/*"
         multiple
         onChange={handleImageUpload}
-        style={{ display: 'none' }}
       />
       {base64DataArray.map((base64, index) => (
-        <img
+        <ImagePreview
           key={index}
           src={base64}
           alt={`Uploaded Preview ${index}`}
-          style={{ width: '200px', height: '200px', marginBottom: '10px' }}
         />
       ))}
-      <label
-        htmlFor="imageUpload"
-        style={{
-          ...imageUploadLabelStyle,
-          display: "inline-block",
-          textAlign: "center",
-          cursor: "pointer",
-        }}
-      >
-        이미지 업로드
-      </label>
-      <br></br>
-      <br></br>
-      <button style={buttonStyle} onClick={handleFormSubmit}>
-        등록하기
-      </button>
-    </div>
+      <ImageUploadLabel htmlFor="imageUpload">이미지 업로드</ImageUploadLabel>
+      <SubmitButton onClick={handleFormSubmit}>등록하기</SubmitButton>
+    </Container>
   );
 }
 
-
-const containerStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  maxWidth: '400px',
-  margin: '0 auto',
-  padding: '20px',
-  gap: '10px',
-};
-
-const titleStyle = {
-  marginBottom: '20px',
-  fontSize: '18px',
-  fontWeight: 'bold',
-};
-
-const inputStyle = {
-  padding: '10px',
-  border: '1px solid #ccc',
-  borderRadius: '4px',
-  width: '100%',
-};
-
-const imageUploadLabelStyle = {
-  display: 'inline-block',
-  padding: '10px',
-  backgroundColor: '#d4f4d4',
-  borderRadius: '4px',
-  cursor: 'pointer',
-  textAlign: 'center',
-  width: '100%',
-};
-
-const buttonStyle = {
-  padding: "10px",
-  border: "none",
-  borderRadius: "4px",
-  backgroundColor: "#4CAF50",
-  color: "white",
-  cursor: "pointer",
-  width: "100%",
-};
-
 export default FoundForm;
+
+// Styled Components
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  gap: 10px;
+`;
+
+const Title = styled.h1`
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: bold;
+`;
+
+const Input = styled.input`
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+`;
+
+const ImageUploadLabel = styled.label`
+  display: inline-block;
+  padding: 10px;
+  background-color: #d4f4d4;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  width: 100%;
+`;
+
+const HiddenFileInput = styled.input`
+  display: none;
+`;
+
+const ImagePreview = styled.img`
+  width: 200px;
+  height: 200px;
+  margin-bottom: 10px;
+`;
+
+const SubmitButton = styled.button`
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #4caf50;
+  color: white;
+  cursor: pointer;
+  width: 100%;
+`;

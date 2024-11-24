@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Spacer } from "./Spacer";
+import styled from "styled-components";
 import { createStrongholdMarker, registerFoundItem } from "../api";
 
 function FoundLocationForm({ requestBody, goBack, setCoordinates, initialCoordinates }) {
   const [kept_coordinates, setKeptCoordinates] = useState(initialCoordinates || [37.5665, 126.9780]); // 초기 값 설정
-  const URL = 'https://caring-sadly-marmoset.ngrok-free.app';
 
   useEffect(() => {
     if (initialCoordinates) {
@@ -56,79 +55,80 @@ function FoundLocationForm({ requestBody, goBack, setCoordinates, initialCoordin
       alert("오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
-  
+
   return (
-    <div style={containerStyle}>
-      <button style={backButtonStyle} onClick={goBack}>
+    <Container>
+      <BackButton onClick={goBack}>
         &#8592; 뒤로
-      </button>
-      <div style={headerStyle}>
-        <h1 style={titleStyle}>물건을 보관할 장소를 지정해주세요</h1>
-      </div>
-      <div style={contentContainerStyle}>
-        <button style={buttonStyle} onClick={handleRegisterClick}>
+      </BackButton>
+      <Header>
+        <Title>물건을 보관할 장소를 지정해주세요</Title>
+      </Header>
+      <Content>
+        <RegisterButton onClick={handleRegisterClick}>
           등록하기
-        </button>
-      </div>
-    </div>
+        </RegisterButton>
+      </Content>
+    </Container>
   );
 }
 
-const containerStyle = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "space-between",
-  height: "100vh", // Full screen height
-  padding: "20px",
-  position: "relative", // Needed for placing the back button absolutely
-};
-
-const headerStyle = {
-  position: "absolute",
-  top: "20px", // Space from the top
-  textAlign: "center",
-  width: "100%",
-};
-
-const contentContainerStyle = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  flex: "1", // Push content to the middle of the page
-};
-
-const titleStyle = {
-  fontSize: "20px",
-  fontWeight: "bold",
-  margin: "40px",
-};
-
-const buttonStyle = {
-    padding: "15px 20px",
-    border: "none",
-    borderRadius: "6px",
-    backgroundColor: "#4CAF50",
-    color: "white",
-    cursor: "pointer",
-    width: "1000%",
-    textAlign: "center",
-    maxWidth: "300px",
-    marginTop: "20px",
-  };
-
-const backButtonStyle = {
-  position: "absolute",
-  top: "10px",
-  left: "10px",
-  padding: "5px 10px",
-  border: "none",
-  borderRadius: "4px",
-  backgroundColor: "transparent",
-  color: "#333",
-  fontSize: "16px",
-  cursor: "pointer",
-};
-
 export default FoundLocationForm;
+
+// Styled Components
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 100vh;
+  padding: 20px;
+  position: relative;
+`;
+
+const Header = styled.div`
+  position: absolute;
+  top: 20px;
+  text-align: center;
+  width: 100%;
+`;
+
+const Title = styled.h1`
+  font-size: 20px;
+  font-weight: bold;
+  margin: 40px;
+`;
+
+const Content = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+`;
+
+const RegisterButton = styled.button`
+  padding: 15px 20px;
+  border: none;
+  border-radius: 6px;
+  background-color: #4caf50;
+  color: white;
+  cursor: pointer;
+  width: 100%;
+  max-width: 300px;
+  text-align: center;
+  margin-top: 20px;
+`;
+
+const BackButton = styled.button`
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: transparent;
+  color: #333;
+  font-size: 16px;
+  cursor: pointer;
+`;
