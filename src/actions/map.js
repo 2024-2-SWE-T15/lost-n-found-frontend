@@ -11,10 +11,12 @@ import { selectMap, selectScene } from "../selector";
 export const refreshMap = (lat, lng) => async (dispatch, getState) => {
   const sceneOnDispatch = selectScene(getState());
 
+  let newMarkerMap = null;
+
   if (sceneOnDispatch === SCENE.INITIAL) {
     // fetch markers
     const markers = await fetchMarkers(lat, lng, 10000);
-    const newMarkerMap = markers.reduce((acc, marker) => {
+    newMarkerMap = markers.reduce((acc, marker) => {
       acc[marker.id] = {
         latlng: marker.latlng,
         type: MARKER_TYPE.FOUND_ITEM,
@@ -22,18 +24,10 @@ export const refreshMap = (lat, lng) => async (dispatch, getState) => {
       };
       return acc;
     }, {});
-
-    const sceneOnUpdate = selectScene(getState());
-    if (sceneOnUpdate === sceneOnDispatch) {
-      const { markerMap: oldMarkerMap } = selectMap(getState());
-      newMarkerMap[CLICKED_MARKER_ID] = oldMarkerMap[CLICKED_MARKER_ID];
-
-      dispatch(setMarkerMap(newMarkerMap));
-    }
   } else if (sceneOnDispatch === SCENE.KEPT_LOCATION_PICKER) {
     // fetch markers
     const markers = await fetchStrongholdMarkers(lat, lng, 10000);
-    const newMarkerMap = markers.reduce((acc, marker) => {
+    newMarkerMap = markers.reduce((acc, marker) => {
       acc[marker.id] = {
         latlng: marker.latlng,
         type: MARKER_TYPE.STRONGHOLD,
@@ -41,14 +35,20 @@ export const refreshMap = (lat, lng) => async (dispatch, getState) => {
       };
       return acc;
     }, {});
+  }
 
-    const { markerMap: oldMarkerMap } = selectMap(getState());
+  if (!newMarkerMap) return;
+
+  const sceneOnUpdate = selectScene(getState());
+  if (sceneOnUpdate === sceneOnDispatch) {
+    const { activeMarkerId, markerMap: oldMarkerMap } = selectMap(getState());
     newMarkerMap[CLICKED_MARKER_ID] = oldMarkerMap[CLICKED_MARKER_ID];
     newMarkerMap[PINNED_MARKER_ID] = oldMarkerMap[PINNED_MARKER_ID];
 
-    const sceneOnUpdate = selectScene(getState());
-    if (sceneOnUpdate === sceneOnDispatch) {
-      dispatch(setMarkerMap(newMarkerMap));
+    dispatch(setMarkerMap(newMarkerMap));
+
+    if (activeMarkerId && !newMarkerMap[activeMarkerId]) {
+      dispatch(setActiveMarkerId(null));
     }
   }
 };
