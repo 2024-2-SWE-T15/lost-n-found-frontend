@@ -154,3 +154,25 @@ export const registerFoundItem = async ({
     throw error;
   }
 };
+
+// 사용자 정보 가져오기
+export const fetchUserInfo = async () => {
+  try {
+    const response = await api.get("/auth/userinfo");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching user info:", error);
+    throw error;
+  }
+};
+
+// 사용자 정보 업데이트
+export const updateUserInfo = async (payload) => {
+  try {
+    const response = await api.put("/auth/", payload);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating user info:", error);
+    throw error;
+  }
+};
