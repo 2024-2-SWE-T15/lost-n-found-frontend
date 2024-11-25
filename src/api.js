@@ -31,6 +31,7 @@ export const fetchMarkers = async (lat, lng, distance) => {
       createTime: marker.create_time,
       updateTime: marker.update_time,
       userId: marker.user_id,
+      thumbnail: marker.thumbnail,
     }));
   } else {
     throw new Error("Invalid response data: " + JSON.stringify(response.data));
