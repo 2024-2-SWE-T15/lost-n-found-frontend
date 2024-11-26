@@ -6,6 +6,7 @@ import FoundLocationForm from "../components/FoundLocationForm";
 import KakaoMap from "../components/Map";
 import LostForm from "../components/LostForm";
 import { SCENE } from "../store";
+import SearchBar from "../components/SearchBar";
 import Sidebar from "../components/Sidebar";
 import styled from "styled-components";
 import { toggleProfileMenu } from "../actions";
@@ -47,7 +48,7 @@ function Main() {
           ) : scene === SCENE.KEPT_LOCATION_PICKER ? (
             <FoundLocationForm />
           ) : (
-            <p>마커를 선택하거나 검색해주세요.</p>
+            <SearchBar />
           )}
         </Sidebar>
       </ContentContainer>
