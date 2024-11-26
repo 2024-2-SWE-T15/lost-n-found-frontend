@@ -1,49 +1,40 @@
 import { CenteredColumn } from "../components/Flex";
 import { Spacer } from "../components/Spacer";
+// @ts-ignore
+import googleLoginButton from "../assets/google_login_button.png";
+// @ts-ignore
+import kakaoLoginButton from "../assets/kakao_login_button.png";
+import { login } from "../api";
+// @ts-ignore
+import loginImage from "../assets/loginImage.png";
+// @ts-ignore
+import naverLoginButton from "../assets/naver_login_button.png";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom"; // navigate 추가
-
-// @ts-ignore
-import loginImage from "../assets/loginImage.png"
-// @ts-ignore
-import googleLoginButton from "../assets/google_login_button.png"
-// @ts-ignore
-import kakaoLoginButton from "../assets/kakao_login_button.png"
-// @ts-ignore
-import naverLoginButton from "../assets/naver_login_button.png"
 
 function Login() {
-
-  const URL = 'https://caring-sadly-marmoset.ngrok-free.app'
-
-  const handleButtonClick = (provider) => {
-    // 현재 페이지를 리디렉션할 URL로 사용하거나, 다른 원하는 URL을 사용
-    const redirectUrl = encodeURIComponent(window.location.origin + '/'); 
-    window.location.href = `${URL}/auth/login/${provider}?redirect_url=${redirectUrl}`;
-  };
-
   return (
     <Wrapper>
       <Image src={loginImage} alt=" " />
       <Spacer size={12} />
       <Header>찾을 수 있을 지도</Header>
-      <Spacer size={12} />
-      Lost n' Found Map
-      <Spacer size={30} />
+      Lost n&apos; Found Map
+      <Spacer size={20} />
       <Button
         src={googleLoginButton}
         alt="구글 로그인 버튼"
-        onClick={() => handleButtonClick('google')}
+        onClick={() => login("google")}
       />
+      <Spacer size={12} />
       <Button
         src={kakaoLoginButton}
         alt="카카오 로그인 버튼"
-        onClick={() => handleButtonClick('kakao')}
+        onClick={() => login("kakao")}
       />
+      <Spacer size={12} />
       <Button
         src={naverLoginButton}
         alt="네이버 로그인 버튼"
-        onClick={() => handleButtonClick('naver')}
+        onClick={() => login("naver")}
       />
     </Wrapper>
   );
@@ -60,17 +51,14 @@ const Header = styled.h1`
 `;
 
 const Image = styled.img`
-  max-width: 500px;
-  height: 400px;
+  height: 360px;
   margin-top: 0px; // Optional: Add margin for spacing
 `;
 
-
 const Button = styled.img`
-  width: 350px; // 필요한 크기에 맞게 조정하세요
+  width: 300px; // 필요한 크기에 맞게 조정하세요
   height: auto; // 비율 유지
   cursor: pointer; // 클릭 가능한 상태 표시
-  margin-top: 20px; // 원하는 경우 여백 추가
 `;
 
 export default Login;

@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const BASE_URL = "https://mantis-charmed-internally.ngrok-free.app";
+
 const api = axios.create({
-  baseURL: "https://caring-sadly-marmoset.ngrok-free.app",
+  baseURL: BASE_URL,
   headers: {
     "ngrok-skip-browser-warning": true,
     "Content-Type": "application/json",
@@ -11,6 +13,11 @@ const api = axios.create({
 
 export const checkLogin = async () => {
   await api.get("/auth/verification");
+};
+
+export const login = (provider) => {
+  const redirectUrl = encodeURIComponent(window.location.origin + "/");
+  window.location.href = `${BASE_URL}/auth/login/${provider}?redirect_url=${redirectUrl}`;
 };
 
 export const fetchMarkers = async (lat, lng, distance) => {
