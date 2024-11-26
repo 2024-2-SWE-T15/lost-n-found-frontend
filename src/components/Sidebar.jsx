@@ -5,7 +5,11 @@ import { selectSidebar } from "../selector";
 import styled from "styled-components";
 import { toggleSidebar } from "../actions";
 
-export const SIDEBAR_WIDTH_PX = 400;
+const SIDEBAR_PADDING_PX = 20;
+
+export const SIDEBAR_FULL_WIDTH_PX = 400;
+export const SIDEBAR_CONTENT_WIDTH_PX =
+  SIDEBAR_FULL_WIDTH_PX - SIDEBAR_PADDING_PX * 2;
 
 const Sidebar = ({ children }) => {
   const dispatch = useDispatch();
@@ -25,8 +29,8 @@ const Sidebar = ({ children }) => {
 const SidebarContainer = styled.div`
   position: absolute;
   top: 0;
-  left: ${({ $isOpen }) => ($isOpen ? "0" : `-${SIDEBAR_WIDTH_PX}px`)};
-  width: ${SIDEBAR_WIDTH_PX}px;
+  left: ${({ $isOpen }) => ($isOpen ? "0" : `-${SIDEBAR_FULL_WIDTH_PX}px`)};
+  width: ${SIDEBAR_FULL_WIDTH_PX}px;
   height: 100%;
   background: white;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
@@ -35,7 +39,7 @@ const SidebarContainer = styled.div`
 `;
 
 const Content = styled.div`
-  padding: 20px;
+  padding: ${SIDEBAR_PADDING_PX}px;
 `;
 
 const MenuButton = styled.button`
