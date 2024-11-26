@@ -1,33 +1,23 @@
-import { useEffect, useState } from "react";
+// @ts-nocheck
+import { useDispatch, useSelector } from "react-redux";
 
+import { selectSidebar } from "../selector";
 import styled from "styled-components";
+import { toggleSidebar } from "../actions";
 
 export const SIDEBAR_WIDTH_PX = 400;
 
-const Sidebar = ({ children, isSidebarOpen, onSidebarToggle }) => {
-  const [isResizing, setIsResizing] = useState(false);
-
-  useEffect(() => {
-    let resizeTimer;
-
-    const handleResize = () => {
-      setIsResizing(true);
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => {
-        setIsResizing(false);
-      }, 100);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+const Sidebar = ({ children }) => {
+  const dispatch = useDispatch();
+  const { opened: sidebarOpened } = useSelector(selectSidebar);
 
   return (
-    <SidebarContainer $isOpen={isSidebarOpen} $isResizing={isResizing}>
-      <Content>
-        {children || <p>이곳에 예시 문구가 표시됩니다. 이 문구는 기본 내용입니다.</p>}
-      </Content>
-      <MenuButton onClick={onSidebarToggle} $isOpen={isSidebarOpen} />
+    <SidebarContainer $isOpen={sidebarOpened}>
+      <Content>{children}</Content>
+      <MenuButton
+        onClick={() => dispatch(toggleSidebar())}
+        $isOpen={sidebarOpened}
+      />
     </SidebarContainer>
   );
 };

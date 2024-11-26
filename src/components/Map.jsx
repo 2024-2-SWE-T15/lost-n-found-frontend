@@ -1,66 +1,34 @@
-import { Map, MapMarker } from "react-kakao-maps-sdk";
+// @ts-nocheck
+
+import { clickMap, refreshMap } from "../actions";
+import { selectMap, selectScene } from "../selector";
+import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 
 import CustomMarker from "./CustomMarker";
-import { fetchMarkers } from "../api";
-import { marker_types } from "../constants/map_const";
+import { Map } from "react-kakao-maps-sdk";
 import styled from "styled-components";
 import { useKakaoLoader } from "../hooks/useKakaoLoader";
 
-export default function KakaoMap({
-  selectedMarkerId,
-  clickedPosition,
-  onMarkerClick,
-  onMapClick,
-  setSidebarContent,
-  isMarkerFixed,
-}) {
+const DEFAULT_CENTER = { lat: 37.293976, lng: 126.975059 };
+const DEFAULT_LEVEL = 3;
+
+export default function KakaoMap() {
+  const dispatch = useDispatch();
+  const { activeMarkerId, markerMap } = useSelector(selectMap);
+  const scene = useSelector(selectScene);
   const isSdkLoaded = useKakaoLoader();
-  const [markers, setMarkers] = useState([]);
-  const [isMarkerLoaded, setIsMarkerLoaded] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(3);
-  const [mapCenter, setMapCenter] = useState({
-    lat: 37.293976,
-    lng: 126.975059,
-  });
 
-  const handleLostButtonClick = () => {
-    setSidebarContent("lost");
-  };
+  const [center, setCenter] = useState(DEFAULT_CENTER);
+  const [level, setLevel] = useState(DEFAULT_LEVEL);
 
-  const handleFoundButtonClick = () => {
-    setSidebarContent("found");
-  };
-
-  const updateMarkers = async () => {
-    try {
-      const markers = await fetchMarkers(mapCenter.lat, mapCenter.lng, 10000);
-
-      setMarkers(
-        markers.map((marker) => ({
-          ...marker,
-          content: <div style={{ color: "#000" }}>{marker.title}</div>,
-          type: marker_types.KEPT_IDLE_PHASE, //임시
-        }))
-      );
-    } catch (error) {
-      console.error("마커 데이터를 불러오는데 실패했습니다:", error);
-      setMarkers([]);
-    }
-  };
-
-  //드래그, 줌 했을경우 마커 데이터 가져오기
   useEffect(() => {
-    try {
-      updateMarkers();
-    } catch (error) {
-      console.error("마커 데이터를 불러오는데 실패했습니다:", error);
-    } finally {
-      setIsMarkerLoaded(true);
+    if (isSdkLoaded) {
+      dispatch(refreshMap(center.lat, center.lng));
     }
-  }, [mapCenter, zoomLevel]);
+  }, [dispatch, isSdkLoaded, scene, center]);
 
-  if (!isSdkLoaded || !isMarkerLoaded) {
+  if (!isSdkLoaded) {
     return (
       <LoadingContainer>
         <div>지도를 불러오는 중...</div>
@@ -71,98 +39,34 @@ export default function KakaoMap({
   return (
     <MapContainer>
       <Map
-        center={mapCenter}
+        center={center}
+        level={level}
         style={{
           width: "100%",
           height: "100%",
         }}
-        level={zoomLevel}
         onClick={(_, mouseEvent) => {
-          const lat = mouseEvent.latLng.getLat();
-          const lng = mouseEvent.latLng.getLng();
-
-          onMapClick(lat, lng);
+          const latLng = mouseEvent.latLng;
+          dispatch(clickMap(latLng.getLat(), latLng.getLng()));
         }}
-        onDragEnd={(map) => {
-          const latlng = map.getCenter();
-          const level = map.getLevel();
-
-          setZoomLevel(level);
-          setMapCenter({ lat: latlng.getLat(), lng: latlng.getLng() });
+        onCenterChanged={(map) => {
+          const center = map.getCenter();
+          setCenter({ lat: center.getLat(), lng: center.getLng() });
         }}
         onZoomChanged={(map) => {
-          if (isMarkerFixed) return; // Prevent zooming if marker is fixed
-          setZoomLevel(map.getLevel());
+          setLevel(map.getLevel());
         }}
       >
-        {/* Display marker for clicked position regardless of isMarkerFixed state */}
-        {clickedPosition && (
-          <MapMarker
-            position={clickedPosition}
-            image={{
-              src: "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png",
-              size: { width: 34, height: 44 },
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "10px",
-                width: "200px",
-                padding: "10px",
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                backgroundColor: "white",
-                boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.3)",
-              }}
-            >
-              <button
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: "#4CAF50",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-                onClick={() => {
-                  if (!isMarkerFixed) handleLostButtonClick();
-                }}
-              >
-                여기서 잃어버림
-              </button>
-              <button
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: "#ff5733",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-                onClick={() => {
-                  if (!isMarkerFixed) handleFoundButtonClick();
-                }}
-              >
-                여기서 찾았음
-              </button>
-            </div>
-          </MapMarker>
-        )}
-
-        {/* Always display existing markers */}
-        {markers.map((value) => (
-          <CustomMarker
-            key={value.id}
-            id={value.id}
-            type={value.type}
-            position={value.latlng}
-            isPopupOpened={selectedMarkerId === value.id}
-            popupContent={value.content}
-            onMarkerClick={onMarkerClick}
-          />
-        ))}
+        {Object.entries(markerMap)
+          .filter(([, marker]) => marker !== null && marker !== undefined)
+          .map(([id, marker]) => (
+            <CustomMarker
+              key={id}
+              id={id}
+              marker={marker}
+              isActive={activeMarkerId === id}
+            />
+          ))}
       </Map>
     </MapContainer>
   );

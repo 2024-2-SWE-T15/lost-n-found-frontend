@@ -1,98 +1,105 @@
-import React, { useState } from "react";
-import { submitLostItem } from "../api";
+import { goBackOnForm, submitLostForm } from "../actions";
+import { useDispatch, useSelector } from "react-redux";
+
+import { selectFormData } from "../selector";
+import { setFormDataField } from "../actions";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
 
-function LostForm({ coordinates }) {
-  const [title, setTitle] = useState("");
-  const [details, setDetails] = useState("");
-  const [category, setCategory] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [selectedImages, setSelectedImages] = useState([]);
-  const [base64DataArray, setBase64DataArray] = useState([]);
-
-  const navigate = useNavigate(); // Hook for redirection
+function LostForm() {
+  const dispatch = useDispatch();
+  const {
+    // @ts-ignore
+    title = "",
+    // @ts-ignore
+    description = "",
+    // @ts-ignore
+    categories = "",
+    // @ts-ignore
+    phoneNumber = "",
+    // @ts-ignore
+    birthDate = "",
+    // @ts-ignore
+    photos = [],
+  } = useSelector(selectFormData);
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
-    const newSelectedImages = [...selectedImages];
-    const newBase64DataArray = [...base64DataArray];
+    const newPhotos = [...photos];
 
     files.forEach((file) => {
-      newSelectedImages.push(file);
-
       const reader = new FileReader();
       reader.onloadend = () => {
-        newBase64DataArray.push(reader.result);
-        setBase64DataArray([...newBase64DataArray]);
+        newPhotos.push(reader.result);
+        dispatch(
+          setFormDataField({
+            field: "photos",
+            value: [...newPhotos],
+          })
+        );
       };
       reader.readAsDataURL(file);
     });
-
-    setSelectedImages([...newSelectedImages]);
-  };
-
-  const handleFormSubmit = async () => {
-    try {
-      const response = await submitLostItem({
-        title,
-        coordinates,
-        category,
-        description: details,
-        base64DataArray,
-        phoneNumber,
-        birthDate,
-      });
-
-      console.log("Response from API:", response);
-
-      // Redirect to /post/:postId after successful submission
-      if (response?.id) {
-        navigate(`/post/${response.id}`);
-      } else {
-        console.error("Post ID not found in the response:", response);
-        alert("등록에 문제가 발생했습니다.");
-      }
-    } catch (error) {
-      console.error("Error sending request:", error);
-      alert("오류가 발생했습니다. 다시 시도해주세요.");
-    }
   };
 
   return (
     <FormContainer>
+      <BackButton
+        onClick={() => {
+          // @ts-ignore
+          dispatch(goBackOnForm());
+        }}
+      >
+        &#8592; 뒤로
+      </BackButton>
       <Input
         type="text"
         placeholder="제목"
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={(e) =>
+          dispatch(setFormDataField({ field: "title", value: e.target.value }))
+        }
       />
       <Input
         type="text"
         placeholder="상세"
-        value={details}
-        onChange={(e) => setDetails(e.target.value)}
+        value={description}
+        onChange={(e) =>
+          dispatch(
+            setFormDataField({ field: "description", value: e.target.value })
+          )
+        }
       />
       <Input
         type="text"
         placeholder="카테고리"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
+        value={categories}
+        onChange={(e) =>
+          dispatch(
+            setFormDataField({ field: "categories", value: e.target.value })
+          )
+        }
       />
       <Input
         type="tel"
         placeholder="전화번호 (선택사항)"
         value={phoneNumber}
-        onChange={(e) => setPhoneNumber(e.target.value)}
+        onChange={(e) =>
+          dispatch(
+            setFormDataField({ field: "phoneNumber", value: e.target.value })
+          )
+        }
       />
       <Input
         type="date"
         placeholder="생년월일 (선택사항)"
         value={birthDate}
-        onChange={(e) => setBirthDate(e.target.value)}
+        onChange={(e) =>
+          dispatch(
+            setFormDataField({ field: "birthDate", value: e.target.value })
+          )
+        }
       />
-      {base64DataArray.map((base64, index) => (
+      {photos.map((base64, index) => (
         <img
           key={index}
           src={base64}
@@ -109,7 +116,16 @@ function LostForm({ coordinates }) {
         multiple
         onChange={handleImageUpload}
       />
-      <SubmitButton onClick={handleFormSubmit}>등록하기</SubmitButton>
+      <SubmitButton
+        onClick={() =>
+          dispatch(
+            // @ts-ignore
+            submitLostForm()
+          )
+        }
+      >
+        등록하기
+      </SubmitButton>
     </FormContainer>
   );
 }
@@ -121,6 +137,19 @@ const FormContainer = styled.div`
   gap: 10px;
   max-width: 300px;
   margin: 0 auto;
+`;
+
+const BackButton = styled.button`
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: transparent;
+  color: #333;
+  font-size: 16px;
+  cursor: pointer;
 `;
 
 const Input = styled.input`

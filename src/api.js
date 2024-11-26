@@ -1,23 +1,24 @@
 import axios from "axios";
 
-const BASE_URL = 'https://caring-sadly-marmoset.ngrok-free.app';
+const api = axios.create({
+  baseURL: "https://caring-sadly-marmoset.ngrok-free.app",
+  headers: {
+    "ngrok-skip-browser-warning": true,
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
+});
+
+export const checkLogin = async () => {
+  await api.get("/auth/verification");
+};
 
 export const fetchMarkers = async (lat, lng, distance) => {
-  const response = await axios.get(
-    `https://caring-sadly-marmoset.ngrok-free.app/marker/`,
-    {
-      headers: {
-        "ngrok-skip-browser-warning": true,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      withCredentials: true,
-      params: { lng, lat, distance },
-    }
-  );
+  const response = await api.get("/marker", {
+    params: { lng, lat, distance },
+  });
 
   if (response.data && Array.isArray(response.data)) {
-    console.log(response.data);
     return response.data.map((marker) => ({
       id: marker.id,
       title: marker.title,
@@ -30,6 +31,27 @@ export const fetchMarkers = async (lat, lng, distance) => {
       createTime: marker.create_time,
       updateTime: marker.update_time,
       userId: marker.user_id,
+      thumbnail: marker.thumbnail,
+    }));
+  } else {
+    throw new Error("Invalid response data: " + JSON.stringify(response.data));
+  }
+};
+
+export const fetchStrongholdMarkers = async (lat, lng, distance) => {
+  const response = await api.get("/marker/stronghold", {
+    params: { lng, lat, distance },
+  });
+
+  if (response.data && Array.isArray(response.data)) {
+    return response.data.map((marker) => ({
+      id: marker.id,
+      name: marker.name,
+      description: marker.description,
+      latlng: {
+        lat: marker.coordinates[0],
+        lng: marker.coordinates[1],
+      },
     }));
   } else {
     throw new Error("Invalid response data: " + JSON.stringify(response.data));
@@ -39,20 +61,20 @@ export const fetchMarkers = async (lat, lng, distance) => {
 export const submitLostItem = async ({
   title,
   coordinates,
-  category,
+  categories,
   description,
-  base64DataArray,
+  photos,
   phoneNumber,
   birthDate,
 }) => {
   // 요청 본문 구성
-  const categoryArray = category.split(" ");
+  const hashtags = categories.split(" ");
   const requestBody = {
-    title: title,
-    coordinates: coordinates || [null, null], // 좌표가 없을 경우 기본값
-    hashtags: categoryArray,
-    description: description,
-    photos: base64DataArray,
+    title,
+    coordinates,
+    hashtags,
+    description,
+    photos,
     personal_idlist: {
       phone: phoneNumber,
       birth: birthDate,
@@ -60,12 +82,7 @@ export const submitLostItem = async ({
   };
 
   try {
-    const response = await axios.post(`${BASE_URL}/post/lost`, requestBody, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      withCredentials: true,
-    });
+    const response = await api.post("/post/lost", requestBody);
 
     console.log("Response from API:", response.data);
     return response.data;
@@ -84,32 +101,56 @@ export const submitLostItem = async ({
 
 export const createStrongholdMarker = async (payload) => {
   try {
-    const response = await axios.post(`${BASE_URL}/marker/stronghold`, payload, {
+    const response = await api.post("/marker/stronghold", payload, {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      withCredentials: true,
     });
     console.log("Fetched stronghold markers:", response.data);
     return response.data;
   } catch (error) {
-    console.error("Error creating stronghold marker:", error.response || error.message);
+    console.error(
+      "Error creating stronghold marker:",
+      error.response || error.message
+    );
     throw error;
   }
 };
 
-export const registerFoundItem = async (payload) => {
+export const registerFoundItem = async ({
+  title,
+  coordinates,
+  keptCoordinates,
+  strongholdId,
+  categories,
+  description,
+  photos,
+  phoneNumber,
+  birthDate,
+}) => {
+  const hashtags = categories.split(" ");
+  const requestBody = {
+    title,
+    coordinates,
+    kept_coordinates: keptCoordinates,
+    stronghold_id: strongholdId,
+    hashtags,
+    description,
+    photos,
+    personal_idlist: {
+      phone: phoneNumber,
+      birth: birthDate,
+    },
+  };
   try {
-    const response = await axios.post(`${BASE_URL}/post/found`, payload, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      withCredentials: true,
-    });
+    const response = await api.post("/post/found", requestBody);
     console.log("POST /post/found response:", response.data);
     return response.data;
   } catch (error) {
-    console.error("Error registering found item:", error.response || error.message);
+    console.error(
+      "Error registering found item:",
+      error.response || error.message
+    );
     throw error;
   }
 };
