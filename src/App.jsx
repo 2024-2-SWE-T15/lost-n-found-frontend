@@ -15,11 +15,14 @@ import reset from "styled-reset";
 const GlobalStyle = createGlobalStyle`
   ${reset};
 
+  @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
+
   * {
     box-sizing: border-box;
   }
 
   #root {
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
     background-color: white;
     color: #1e1e1e;
     width: 100vw;
