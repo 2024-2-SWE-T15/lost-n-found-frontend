@@ -34,11 +34,9 @@ export const fetchMarkers = async (lat, lng, distance) => {
         lng: marker.coordinates[1],
       },
       isLost: marker.is_lost,
-      description: marker.description,
       createTime: marker.create_time,
-      updateTime: marker.update_time,
-      userId: marker.user_id,
       thumbnail: marker.thumbnail,
+      hashtags: marker.hashtags,
     }));
   } else {
     throw new Error("Invalid response data: " + JSON.stringify(response.data));
