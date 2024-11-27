@@ -44,17 +44,23 @@ export const fetchMarkers = async (lat, lng, distance) => {
 };
 
 export const searchPosts = async ({ query, tags, lat, lng, distance }) => {
-  const response = await api.post("/post/search", {
-    query,
-    tags,
-    coordinates: [lat, lng],
-    distance,
-    limit: 30,
+  const response = await api.get("/post/search/", {
+    params: {
+      query,
+      tags,
+      coordinates: [lat, lng],
+      distance,
+      limit: 30,
+    },
   });
 
   console.log("Response from API:", response.data);
   return response.data.map((post) => ({
     id: post.id,
+    latlng: {
+      lat: post.coordinates[0],
+      lng: post.coordinates[1],
+    },
     title: post.title,
     thumbnail: post.thumbnail,
     hashtags: post.hashtags,
