@@ -9,26 +9,21 @@ import {
   openSidebar,
   recordCenter,
   recordLevel,
+  recordSidebarOffset,
   setActiveMarkerId,
   setMarkerMap,
 } from "./store";
-import { selectMap, selectScene } from "../selector";
+import { selectMap, selectScene, selectSidebarAwareCenter } from "../selector";
+
+import { getSidebarLatLngOffset } from "../utils";
 
 const REFRESH_ON_MOVE_SCENES = [SCENE.INITIAL, SCENE.KEPT_LOCATION_PICKER];
 
-export const mapInitialized =
-  (lat, lng, level) => async (dispatch, getState) => {
-    dispatch(recordCenter({ lat, lng }));
-    dispatch(recordLevel(level));
-
-    const scene = selectScene(getState());
-    if (REFRESH_ON_MOVE_SCENES.includes(scene)) {
-      dispatch(refreshMap());
-    }
-  };
-
-export const centerChanged = (lat, lng) => async (dispatch, getState) => {
-  dispatch(recordCenter({ lat, lng }));
+export const mapInitialized = (map) => async (dispatch, getState) => {
+  const center = map.getCenter();
+  dispatch(recordCenter({ lat: center.getLat(), lng: center.getLng() }));
+  dispatch(recordLevel(map.getLevel()));
+  dispatch(recordSidebarOffset(getSidebarLatLngOffset(map.getProjection())));
 
   const scene = selectScene(getState());
   if (REFRESH_ON_MOVE_SCENES.includes(scene)) {
@@ -36,8 +31,19 @@ export const centerChanged = (lat, lng) => async (dispatch, getState) => {
   }
 };
 
-export const levelChanged = (level) => async (dispatch, getState) => {
-  dispatch(recordLevel(level));
+export const centerChanged = (map) => async (dispatch, getState) => {
+  const center = map.getCenter();
+  dispatch(recordCenter({ lat: center.getLat(), lng: center.getLng() }));
+
+  const scene = selectScene(getState());
+  if (REFRESH_ON_MOVE_SCENES.includes(scene)) {
+    dispatch(refreshMap());
+  }
+};
+
+export const levelChanged = (map) => async (dispatch, getState) => {
+  dispatch(recordLevel(map.getLevel()));
+  dispatch(recordSidebarOffset(getSidebarLatLngOffset(map.getProjection())));
 
   const scene = selectScene(getState());
   if (REFRESH_ON_MOVE_SCENES.includes(scene)) {
@@ -48,9 +54,7 @@ export const levelChanged = (level) => async (dispatch, getState) => {
 export const refreshMap = () => async (dispatch, getState) => {
   const state = getState();
   const sceneOnDispatch = selectScene(state);
-  const {
-    centerSnapshot: { lat, lng },
-  } = selectMap(state);
+  const { lat, lng } = selectSidebarAwareCenter(state);
 
   let newMarkerMap = null;
 

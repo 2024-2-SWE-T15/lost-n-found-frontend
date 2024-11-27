@@ -16,6 +16,7 @@ const mapSlice = createSlice({
     activeMarkerId: null,
     centerSnapshot: null,
     levelSnapshot: null,
+    sidebarOffsetSnapshot: null,
     markerMap: {},
   },
   reducers: {
@@ -29,6 +30,12 @@ const mapSlice = createSlice({
       return {
         ...state,
         levelSnapshot: { ...action.payload },
+      };
+    },
+    recordSidebarOffset: (state, action) => {
+      return {
+        ...state,
+        sidebarOffsetSnapshot: { ...action.payload },
       };
     },
     setActiveMarkerId: (state, action) => {

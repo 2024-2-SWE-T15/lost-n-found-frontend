@@ -1,3 +1,4 @@
+import { CenteredColumn, Column } from "../components/Flex";
 import {
   selectActiveMarker,
   selectProfileMenu,
@@ -10,9 +11,13 @@ import FoundLocationForm from "../components/FoundLocationForm";
 import KakaoMap from "../components/Map";
 import LostForm from "../components/LostForm";
 import MarkerDetails from "../components/MarkerDetails";
+import { MdClose } from "react-icons/md";
 import { SCENE } from "../store";
 import SearchBar from "../components/SearchBar";
+import SearchResult from "../components/SearchResult";
 import Sidebar from "../components/Sidebar";
+import { Spacer } from "../components/Spacer";
+import { clearSearch } from "../actions/search";
 import styled from "styled-components";
 import { toggleProfileMenu } from "../actions";
 import { useNavigate } from "react-router-dom";
@@ -28,7 +33,26 @@ function Main() {
   const sidebarContent = (() => {
     switch (scene) {
       case SCENE.SEARCH_RESULT:
-        return <p>TODO: 검색 결과</p>;
+        return (
+          <>
+            <SearchBar />
+            <Spacer size={4} />
+            <ClearFilterButton
+              onClick={() =>
+                dispatch(
+                  // @ts-ignore
+                  clearSearch()
+                )
+              }
+            >
+              <MdClose size={14} />
+              검색 취소
+            </ClearFilterButton>
+            <RemainingArea>
+              <SearchResult />
+            </RemainingArea>
+          </>
+        );
       case SCENE.LOST_DETAILS_FORM:
         return <LostForm />;
       case SCENE.FOUND_DETAILS_FORM:
@@ -37,10 +61,15 @@ function Main() {
         return <FoundLocationForm />;
       // case SCENE.INITIAL:
       default:
-        return activeMarker?.data ? (
-          <MarkerDetails markerData={activeMarker.data} />
-        ) : (
-          <SearchBar />
+        return (
+          <>
+            <SearchBar />
+            {activeMarker?.data ? (
+              <MarkerDetails markerData={activeMarker.data} />
+            ) : (
+              <HelperText>검색하거나 장소를 선택해주세요.</HelperText>
+            )}
+          </>
         );
     }
   })();
@@ -159,6 +188,42 @@ const ContentContainer = styled.div`
 const MapContainer = styled.div`
   flex: 1 1 100%;
   height: 100%;
+`;
+
+const ClearFilterButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  padding: 4px 0;
+  gap: 4px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+
+  font-size: 12px;
+  color: #666;
+
+  &:hover {
+    background-color: #eee;
+  }
+`;
+
+const RemainingArea = styled(Column)`
+  flex: 1 1 auto;
+  width: 100%;
+  overflow-y: auto;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const HelperText = styled(CenteredColumn)`
+  flex: 1 0 auto;
+  font-size: 24px;
+  color: #666;
+  text-align: center;
 `;
 
 export default Main;

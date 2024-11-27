@@ -9,7 +9,13 @@ export const {
 } = store.formDataSlice;
 
 export const {
-  actions: { recordCenter, recordLevel, setMarkerMap, setActiveMarkerId },
+  actions: {
+    recordCenter,
+    recordLevel,
+    recordSidebarOffset,
+    setMarkerMap,
+    setActiveMarkerId,
+  },
 } = store.mapSlice;
 
 export const {

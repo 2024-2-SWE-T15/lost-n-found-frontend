@@ -36,6 +36,9 @@ const filterSlice = createSlice({
     clear: () => ({ value: null }),
     apply: (_, action) => ({ value: { ...action.payload } }),
   },
+  selectors: {
+    selectFilter: (state) => state.value,
+  },
 });
 
 const formDataSlice = createSlice({

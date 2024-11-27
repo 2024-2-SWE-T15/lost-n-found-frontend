@@ -5,8 +5,8 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { MARKER_TYPE } from "../store";
 import PropTypes from "prop-types";
-import { SIDEBAR_FULL_WIDTH_PX } from "./Sidebar";
 import { clickMarker } from "../actions";
+import { getSidebarLatLngOffset } from "../utils";
 import marker_black from "../assets/marker_img/marker_black.png";
 import marker_blue from "../assets/marker_img/marker_blue.png";
 import marker_new from "../assets/marker_img/marker_new_3.png";
@@ -24,23 +24,6 @@ const markerImageMap = {
   [MARKER_TYPE.CLICKED]: marker_red,
 };
 
-const getSidebarOffset = (projection) => {
-  // click event causes the sidebar to open, so we need to adjust the map center
-  const sidebarTopLeft = projection.coordsFromContainerPoint(
-    // eslint-disable-next-line no-undef
-    new kakao.maps.Point(0, 0)
-  );
-  const sidebarTopRight = projection.coordsFromContainerPoint(
-    // eslint-disable-next-line no-undef
-    new kakao.maps.Point(SIDEBAR_FULL_WIDTH_PX, 0)
-  );
-
-  return {
-    lat: (sidebarTopLeft.getLat() - sidebarTopRight.getLat()) / 2,
-    lng: (sidebarTopLeft.getLng() - sidebarTopRight.getLng()) / 2,
-  };
-};
-
 const CustomMarker = ({ id, marker, isActive }) => {
   const { type, latlng } = marker;
   const dispatch = useDispatch();
@@ -54,7 +37,7 @@ const CustomMarker = ({ id, marker, isActive }) => {
       // defer the panning to the next tick
       const timeout = setTimeout(() => {
         const offset = sidebarOpened
-          ? getSidebarOffset(projection)
+          ? getSidebarLatLngOffset(projection)
           : { lat: 0, lng: 0 };
 
         map.panTo(
@@ -72,18 +55,26 @@ const CustomMarker = ({ id, marker, isActive }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive]);
 
-  const popupContent = isActive
-    ? renderMarkerPopupContent(scene, marker)
-    : null;
+  const popupContent = isActive ? renderMarkerPopupContent(scene) : null;
 
   return (
     <MapMarker
+      zIndex={
+        isActive
+          ? 4
+          : type === MARKER_TYPE.PINNED
+          ? 3
+          : type === MARKER_TYPE.CLICKED
+          ? 2
+          : 1
+      }
       position={latlng}
       onClick={() => dispatch(clickMarker(id))}
       image={{
         src: markerImageMap[type],
         size: isActive ? ACTIVE_MARKER_IMG_SIZE : INACTIVE_MARKER_IMG_SIZE,
       }}
+      infoWindowOptions={{ zIndex: 5 }}
     >
       {popupContent}
     </MapMarker>

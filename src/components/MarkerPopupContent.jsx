@@ -10,6 +10,7 @@ const renderMarkerPopupContent = (scene) => {
   const content = (() => {
     switch (scene) {
       case SCENE.INITIAL:
+      case SCENE.SEARCH_RESULT:
         return <PostSelectButtons />;
       default:
         return null;

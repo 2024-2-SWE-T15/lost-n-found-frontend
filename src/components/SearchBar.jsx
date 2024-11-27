@@ -1,20 +1,44 @@
 import { IoMdCheckmark, IoMdSearch } from "react-icons/io";
 import { MdFilterAlt, MdFilterAltOff } from "react-icons/md";
 import styled, { css } from "styled-components";
+import { useDispatch, useSelector } from "react-redux";
 
+import { search } from "../actions/search";
+import { selectFilter } from "../selector";
 import { useState } from "react";
 
 const SearchBar = () => {
-  const [searchTerm, setSearchTerm] = useState(""); // 검색어
-  const [hashtags, setHashtags] = useState([]); // 해시태그 목록
-  const [newHashtag, setNewHashtag] = useState(""); // 추가할 해시태그 입력
-  const [isDistanceActive, setIsDistanceActive] = useState(false); // 거리 활성화 상태
-  const [distance, setDistance] = useState(100); // 거리 값
-  const [isFilterVisible, setIsFilterVisible] = useState(false); // 토글 상태
+  const dispatch = useDispatch();
+  const {
+    // @ts-ignore
+    query: initialSearchTerm,
+    // @ts-ignore
+    tags: initialHashtags,
+    // @ts-ignore
+    distance: initialDistance,
+    // @ts-ignore
+    isSearching = false,
+  } = useSelector(selectFilter) ?? {};
 
-  const isSearchActive =
-    searchTerm.trim().length > 0 ||
-    (isFilterVisible && (hashtags.length > 0 || isDistanceActive));
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm ?? ""); // 검색어
+  const [hashtags, setHashtags] = useState(initialHashtags ?? []); // 해시태그 목록
+  const [newHashtag, setNewHashtag] = useState(""); // 추가할 해시태그 입력
+  const [isDistanceActive, setIsDistanceActive] = useState(
+    initialDistance !== undefined
+  ); // 거리 활성화 상태
+  const [distance, setDistance] = useState(initialDistance ?? 100); // 거리 값
+  const [isFilterVisible, setIsFilterVisible] = useState(
+    initialHashtags || initialDistance
+  ); // 토글 상태
+
+  const isSearchActive = (() => {
+    if (isSearching) return false;
+    if (searchTerm.trim().length > 0) return true;
+    if (!isFilterVisible) return false;
+    if (hashtags.length > 0) return true;
+    if (isDistanceActive) return true;
+    return false;
+  })();
 
   // 검색 핸들러
   const handleSearchChange = (e) => {
@@ -22,7 +46,14 @@ const SearchBar = () => {
   };
 
   const handleSearchSubmit = () => {
-    console.log("검색어:", searchTerm);
+    dispatch(
+      // @ts-ignore
+      search({
+        query: searchTerm,
+        tags: hashtags,
+        distance: isFilterVisible && isDistanceActive ? distance : null,
+      })
+    );
   };
 
   // 해시태그 추가 핸들러

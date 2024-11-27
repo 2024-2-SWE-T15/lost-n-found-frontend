@@ -52,6 +52,9 @@ export const searchPosts = async ({ query, tags, lat, lng, distance }) => {
       distance,
       limit: 30,
     },
+    paramsSerializer: {
+      indexes: null,
+    },
   });
 
   console.log("Response from API:", response.data);
@@ -64,6 +67,7 @@ export const searchPosts = async ({ query, tags, lat, lng, distance }) => {
     title: post.title,
     thumbnail: post.thumbnail,
     hashtags: post.hashtags,
+    createTime: post.create_time,
   }));
 };
 

@@ -7,12 +7,12 @@ import {
   mapInitialized,
 } from "../actions";
 import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState } from "react";
 
 import CustomMarker from "./CustomMarker";
 import { Map } from "react-kakao-maps-sdk";
 import { selectMap } from "../selector";
 import styled from "styled-components";
-import { useEffect } from "react";
 import { useKakaoLoader } from "../hooks/useKakaoLoader";
 
 const DEFAULT_CENTER = { lat: 37.293976, lng: 126.975059 };
@@ -22,14 +22,13 @@ export default function KakaoMap() {
   const dispatch = useDispatch();
   const { activeMarkerId, markerMap } = useSelector(selectMap);
   const isSdkLoaded = useKakaoLoader();
+  const [map, setMap] = useState(null);
 
   useEffect(() => {
-    if (isSdkLoaded) {
-      dispatch(
-        mapInitialized(DEFAULT_CENTER.lat, DEFAULT_CENTER.lng, DEFAULT_LEVEL)
-      );
+    if (map) {
+      dispatch(mapInitialized(map));
     }
-  }, [isSdkLoaded, dispatch]);
+  }, [map, dispatch]);
 
   if (!isSdkLoaded) {
     return (
@@ -48,16 +47,16 @@ export default function KakaoMap() {
           width: "100%",
           height: "100%",
         }}
+        onCreate={setMap}
         onClick={(_, mouseEvent) => {
           const latLng = mouseEvent.latLng;
           dispatch(clickMap(latLng.getLat(), latLng.getLng()));
         }}
         onCenterChanged={(map) => {
-          const center = map.getCenter();
-          dispatch(centerChanged(center.getLat(), center.getLng()));
+          dispatch(centerChanged(map));
         }}
         onZoomChanged={(map) => {
-          dispatch(levelChanged(map.getLevel()));
+          dispatch(levelChanged(map));
         }}
       >
         {Object.entries(markerMap)
