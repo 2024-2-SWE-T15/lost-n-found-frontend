@@ -9,7 +9,7 @@ export const {
 } = store.formDataSlice;
 
 export const {
-  actions: { setMarkerMap, setActiveMarkerId },
+  actions: { recordCenter, recordLevel, setMarkerMap, setActiveMarkerId },
 } = store.mapSlice;
 
 export const {

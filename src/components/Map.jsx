@@ -1,13 +1,18 @@
 // @ts-nocheck
 
-import { clickMap, refreshMap } from "../actions";
-import { selectMap, selectScene } from "../selector";
+import {
+  centerChanged,
+  clickMap,
+  levelChanged,
+  mapInitialized,
+} from "../actions";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
 
 import CustomMarker from "./CustomMarker";
 import { Map } from "react-kakao-maps-sdk";
+import { selectMap } from "../selector";
 import styled from "styled-components";
+import { useEffect } from "react";
 import { useKakaoLoader } from "../hooks/useKakaoLoader";
 
 const DEFAULT_CENTER = { lat: 37.293976, lng: 126.975059 };
@@ -16,17 +21,15 @@ const DEFAULT_LEVEL = 3;
 export default function KakaoMap() {
   const dispatch = useDispatch();
   const { activeMarkerId, markerMap } = useSelector(selectMap);
-  const scene = useSelector(selectScene);
   const isSdkLoaded = useKakaoLoader();
-
-  const [center, setCenter] = useState(DEFAULT_CENTER);
-  const [level, setLevel] = useState(DEFAULT_LEVEL);
 
   useEffect(() => {
     if (isSdkLoaded) {
-      dispatch(refreshMap(center.lat, center.lng));
+      dispatch(
+        mapInitialized(DEFAULT_CENTER.lat, DEFAULT_CENTER.lng, DEFAULT_LEVEL)
+      );
     }
-  }, [dispatch, isSdkLoaded, scene, center]);
+  }, [isSdkLoaded, dispatch]);
 
   if (!isSdkLoaded) {
     return (
@@ -39,8 +42,8 @@ export default function KakaoMap() {
   return (
     <MapContainer>
       <Map
-        center={center}
-        level={level}
+        center={DEFAULT_CENTER}
+        level={DEFAULT_LEVEL}
         style={{
           width: "100%",
           height: "100%",
@@ -51,10 +54,10 @@ export default function KakaoMap() {
         }}
         onCenterChanged={(map) => {
           const center = map.getCenter();
-          setCenter({ lat: center.getLat(), lng: center.getLng() });
+          dispatch(centerChanged(center.getLat(), center.getLng()));
         }}
         onZoomChanged={(map) => {
-          setLevel(map.getLevel());
+          dispatch(levelChanged(map.getLevel()));
         }}
       >
         {Object.entries(markerMap)

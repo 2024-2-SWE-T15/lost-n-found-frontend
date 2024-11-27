@@ -5,11 +5,52 @@ import {
   SCENE,
 } from "../store";
 import { fetchMarkers, fetchStrongholdMarkers } from "../api";
-import { openSidebar, setActiveMarkerId, setMarkerMap } from "./store";
+import {
+  openSidebar,
+  recordCenter,
+  recordLevel,
+  setActiveMarkerId,
+  setMarkerMap,
+} from "./store";
 import { selectMap, selectScene } from "../selector";
 
-export const refreshMap = (lat, lng) => async (dispatch, getState) => {
-  const sceneOnDispatch = selectScene(getState());
+const REFRESH_ON_MOVE_SCENES = [SCENE.INITIAL, SCENE.KEPT_LOCATION_PICKER];
+
+export const mapInitialized =
+  (lat, lng, level) => async (dispatch, getState) => {
+    dispatch(recordCenter({ lat, lng }));
+    dispatch(recordLevel(level));
+
+    const scene = selectScene(getState());
+    if (REFRESH_ON_MOVE_SCENES.includes(scene)) {
+      dispatch(refreshMap());
+    }
+  };
+
+export const centerChanged = (lat, lng) => async (dispatch, getState) => {
+  dispatch(recordCenter({ lat, lng }));
+
+  const scene = selectScene(getState());
+  if (REFRESH_ON_MOVE_SCENES.includes(scene)) {
+    dispatch(refreshMap());
+  }
+};
+
+export const levelChanged = (level) => async (dispatch, getState) => {
+  dispatch(recordLevel(level));
+
+  const scene = selectScene(getState());
+  if (REFRESH_ON_MOVE_SCENES.includes(scene)) {
+    dispatch(refreshMap());
+  }
+};
+
+export const refreshMap = () => async (dispatch, getState) => {
+  const state = getState();
+  const sceneOnDispatch = selectScene(state);
+  const {
+    centerSnapshot: { lat, lng },
+  } = selectMap(state);
 
   let newMarkerMap = null;
 
@@ -19,7 +60,7 @@ export const refreshMap = (lat, lng) => async (dispatch, getState) => {
     newMarkerMap = markers.reduce((acc, marker) => {
       acc[marker.id] = {
         latlng: marker.latlng,
-        type: MARKER_TYPE.FOUND_ITEM,
+        type: MARKER_TYPE.ITEM,
         data: marker,
       };
       return acc;

@@ -9,7 +9,6 @@ import { SIDEBAR_FULL_WIDTH_PX } from "./Sidebar";
 import { clickMarker } from "../actions";
 import marker_black from "../assets/marker_img/marker_black.png";
 import marker_blue from "../assets/marker_img/marker_blue.png";
-// import marker_green from "../assets/marker_img/marker_green.png";
 import marker_new from "../assets/marker_img/marker_new_3.png";
 import marker_red from "../assets/marker_img/marker_red.png";
 import renderMarkerPopupContent from "./MarkerPopupContent";
@@ -19,7 +18,7 @@ const ACTIVE_MARKER_IMG_SIZE = { width: 40, height: 40 };
 const INACTIVE_MARKER_IMG_SIZE = { width: 32, height: 32 };
 
 const markerImageMap = {
-  [MARKER_TYPE.FOUND_ITEM]: marker_black,
+  [MARKER_TYPE.ITEM]: marker_black,
   [MARKER_TYPE.STRONGHOLD]: marker_blue,
   [MARKER_TYPE.PINNED]: marker_new,
   [MARKER_TYPE.CLICKED]: marker_red,
