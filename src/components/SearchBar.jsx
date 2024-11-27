@@ -8,9 +8,13 @@ const SearchBar = () => {
   const [searchTerm, setSearchTerm] = useState(""); // 검색어
   const [hashtags, setHashtags] = useState([]); // 해시태그 목록
   const [newHashtag, setNewHashtag] = useState(""); // 추가할 해시태그 입력
-  const [isDistanceActive, setIsDistanceActive] = useState(true); // 거리 활성화 상태
+  const [isDistanceActive, setIsDistanceActive] = useState(false); // 거리 활성화 상태
   const [distance, setDistance] = useState(100); // 거리 값
   const [isFilterVisible, setIsFilterVisible] = useState(false); // 토글 상태
+
+  const isSearchActive =
+    searchTerm.trim().length > 0 ||
+    (isFilterVisible && (hashtags.length > 0 || isDistanceActive));
 
   // 검색 핸들러
   const handleSearchChange = (e) => {
@@ -73,7 +77,7 @@ const SearchBar = () => {
           value={searchTerm}
           onChange={handleSearchChange}
         />
-        <SearchButton onClick={handleSearchSubmit}>
+        <SearchButton onClick={handleSearchSubmit} disabled={!isSearchActive}>
           <SearchIcon />
         </SearchButton>
         <FilterIconButton onClick={toggleFilterVisibility}>
@@ -177,6 +181,12 @@ const SearchButton = styled.button`
 
   &:hover {
     background-color: #45a049;
+  }
+
+  &:disabled {
+    background-color: #f0f0f0;
+    color: #bbb;
+    pointer-events: none;
   }
 `;
 
