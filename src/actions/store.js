@@ -1,6 +1,10 @@
 import * as store from "../store";
 
 export const {
+  actions: { clear: clearFilter, apply: applyFilter },
+} = store.filterSlice;
+
+export const {
   actions: { clear: clearFormData, setField: setFormDataField },
 } = store.formDataSlice;
 

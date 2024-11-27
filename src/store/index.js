@@ -1,10 +1,16 @@
 import { combineSlices, configureStore } from "@reduxjs/toolkit";
-import { formDataSlice, profileMenuSlice, sidebarSlice } from "./misc";
+import {
+  filterSlice,
+  formDataSlice,
+  profileMenuSlice,
+  sidebarSlice,
+} from "./misc";
 
 import { mapSlice } from "./map";
 import { sceneSlice } from "./scene";
 
 const rootReducer = combineSlices(
+  filterSlice,
   formDataSlice,
   profileMenuSlice,
   sidebarSlice,
