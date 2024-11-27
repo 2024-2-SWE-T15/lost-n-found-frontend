@@ -1,10 +1,15 @@
-import { selectProfileMenu, selectScene } from "../selector";
+import {
+  selectActiveMarker,
+  selectProfileMenu,
+  selectScene,
+} from "../selector";
 import { useDispatch, useSelector } from "react-redux";
 
 import FoundForm from "../components/FoundForm";
 import FoundLocationForm from "../components/FoundLocationForm";
 import KakaoMap from "../components/Map";
 import LostForm from "../components/LostForm";
+import MarkerDetails from "../components/MarkerDetails";
 import { SCENE } from "../store";
 import SearchBar from "../components/SearchBar";
 import Sidebar from "../components/Sidebar";
@@ -16,8 +21,29 @@ function Main() {
   const dispatch = useDispatch();
   const { opened: profileMenuOpened } = useSelector(selectProfileMenu);
   const scene = useSelector(selectScene);
+  const activeMarker = useSelector(selectActiveMarker);
 
   const navigate = useNavigate();
+
+  const sidebarContent = (() => {
+    switch (scene) {
+      case SCENE.SEARCH_RESULT:
+        return <p>TODO: 검색 결과</p>;
+      case SCENE.LOST_DETAILS_FORM:
+        return <LostForm />;
+      case SCENE.FOUND_DETAILS_FORM:
+        return <FoundForm />;
+      case SCENE.KEPT_LOCATION_PICKER:
+        return <FoundLocationForm />;
+      // case SCENE.INITIAL:
+      default:
+        return activeMarker?.data ? (
+          <MarkerDetails markerData={activeMarker.data} />
+        ) : (
+          <SearchBar />
+        );
+    }
+  })();
 
   return (
     <Container>
@@ -41,15 +67,7 @@ function Main() {
         </MapContainer>
         <Sidebar>
           {/* Conditional rendering logic */}
-          {scene === SCENE.LOST_DETAILS_FORM ? (
-            <LostForm />
-          ) : scene === SCENE.FOUND_DETAILS_FORM ? (
-            <FoundForm />
-          ) : scene === SCENE.KEPT_LOCATION_PICKER ? (
-            <FoundLocationForm />
-          ) : (
-            <SearchBar />
-          )}
+          {sidebarContent}
         </Sidebar>
       </ContentContainer>
     </Container>

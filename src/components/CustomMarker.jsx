@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { MARKER_TYPE } from "../store";
 import PropTypes from "prop-types";
-import { SIDEBAR_WIDTH_PX } from "./Sidebar";
+import { SIDEBAR_FULL_WIDTH_PX } from "./Sidebar";
 import { clickMarker } from "../actions";
 import marker_black from "../assets/marker_img/marker_black.png";
 import marker_blue from "../assets/marker_img/marker_blue.png";
@@ -33,7 +33,7 @@ const getSidebarOffset = (projection) => {
   );
   const sidebarTopRight = projection.coordsFromContainerPoint(
     // eslint-disable-next-line no-undef
-    new kakao.maps.Point(SIDEBAR_WIDTH_PX, 0)
+    new kakao.maps.Point(SIDEBAR_FULL_WIDTH_PX, 0)
   );
 
   return {
