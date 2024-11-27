@@ -1,5 +1,8 @@
-import React, { useState } from "react";
-import styled from "styled-components";
+import { IoMdCheckmark, IoMdSearch } from "react-icons/io";
+import { MdFilterAlt, MdFilterAltOff } from "react-icons/md";
+import styled, { css } from "styled-components";
+
+import { useState } from "react";
 
 const SearchBar = () => {
   const [searchTerm, setSearchTerm] = useState(""); // 검색어
@@ -70,54 +73,66 @@ const SearchBar = () => {
           value={searchTerm}
           onChange={handleSearchChange}
         />
-        <SearchButton onClick={handleSearchSubmit}>검색</SearchButton>
+        <SearchButton onClick={handleSearchSubmit}>
+          <SearchIcon />
+        </SearchButton>
         <FilterIconButton onClick={toggleFilterVisibility}>
-          ⚙️
+          {isFilterVisible ? <FilterEnabledIcon /> : <FilterDisabledIcon />}
         </FilterIconButton>
       </SearchContainer>
 
       {/* 해시태그 영역 */}
       {isFilterVisible && (
-        <HashtagContainer>
-          <HashtagInput
-            type="text"
-            placeholder="해시태그 입력 후 Enter"
-            value={newHashtag}
-            onChange={handleHashtagChange}
-            onKeyPress={handleHashtagKeyPress}
-          />
-          <HashtagList>
-            {hashtags.map((tag, index) => (
-              <Hashtag key={index}>
-                #{tag}
-                <RemoveButton onClick={() => removeHashtag(index)}>x</RemoveButton>
-              </Hashtag>
-            ))}
-          </HashtagList>
-        </HashtagContainer>
-      )}
+        <>
+          <HashtagContainer>
+            <HashtagInput
+              type="text"
+              placeholder="해시태그 입력 후 Enter"
+              value={newHashtag}
+              onChange={handleHashtagChange}
+              onKeyPress={handleHashtagKeyPress}
+            />
+            {hashtags.length > 0 && (
+              <HashtagList>
+                {hashtags.map((tag, index) => (
+                  <Hashtag key={index}>
+                    #{tag}
+                    <RemoveButton onClick={() => removeHashtag(index)}>
+                      x
+                    </RemoveButton>
+                  </Hashtag>
+                ))}
+              </HashtagList>
+            )}
+          </HashtagContainer>
 
-      {/* 거리 조정 영역 */}
-      <DistanceContainer>
-        <DistanceToggleButton
-          isActive={isDistanceActive}
-          onClick={toggleDistance}
-        >
-          {isDistanceActive ? "거리 활성화 ✔" : "거리 비활성화 ✘"}
-        </DistanceToggleButton>
-        <Slider
-          type="range"
-          min="100"
-          max="1000"
-          step="100"
-          value={distance}
-          onChange={handleDistanceChange}
-          disabled={!isDistanceActive}
-        />
-        <DistanceValue>
-          {isDistanceActive ? `거리: ${distance}m` : "거리 조정 비활성화됨"}
-        </DistanceValue>
-      </DistanceContainer>
+          {/* 거리 조정 영역 */}
+          <DistanceContainer>
+            <DistanceLabel>거리 기반 검색</DistanceLabel>
+            <DistanceToggleButton
+              // @ts-ignore
+              $isActive={isDistanceActive}
+              onClick={toggleDistance}
+            >
+              {isDistanceActive && <DistanceButtonEnabledIcon />}
+            </DistanceToggleButton>
+
+            <Slider
+              type="range"
+              min="100"
+              max="1000"
+              step="100"
+              value={distance}
+              onChange={handleDistanceChange}
+              disabled={!isDistanceActive}
+            />
+            <DistanceValue
+              // @ts-ignore
+              $disabled={!isDistanceActive}
+            >{`${distance}m`}</DistanceValue>
+          </DistanceContainer>
+        </>
+      )}
     </Wrapper>
   );
 };
@@ -132,7 +147,7 @@ const Wrapper = styled.div`
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 8px;
   background-color: #fff;
   border: 1px solid #ccc;
   border-radius: 8px;
@@ -140,7 +155,7 @@ const Wrapper = styled.div`
 
 const SearchContainer = styled.div`
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 10px;
   width: 100%;
 `;
@@ -153,7 +168,7 @@ const SearchInput = styled.input`
 `;
 
 const SearchButton = styled.button`
-  padding: 10px 20px;
+  padding: 0 10px;
   background-color: #4caf50;
   color: white;
   border: none;
@@ -165,8 +180,16 @@ const SearchButton = styled.button`
   }
 `;
 
+const SearchIcon = styled(IoMdSearch)`
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  transform: translateY(2px);
+`;
+
 const FilterIconButton = styled.button`
-  padding: 10px;
+  padding: 0 10px;
   background-color: #eee;
   border: none;
   border-radius: 4px;
@@ -175,6 +198,24 @@ const FilterIconButton = styled.button`
   &:hover {
     background-color: #ddd;
   }
+`;
+
+const FilterIconStyle = css`
+  width: 14px;
+  height: 14px;
+  min-width: 14px;
+  min-height: 14px;
+  transform: translateY(2px);
+`;
+
+const FilterEnabledIcon = styled(MdFilterAlt)`
+  ${FilterIconStyle}
+  color: #333;
+`;
+
+const FilterDisabledIcon = styled(MdFilterAltOff)`
+  ${FilterIconStyle}
+  color: #888;
 `;
 
 const HashtagContainer = styled.div`
@@ -216,23 +257,46 @@ const RemoveButton = styled.button`
 
 const DistanceContainer = styled.div`
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   gap: 10px;
+  padding: 0 4px;
 `;
 
-const DistanceToggleButton = styled.button.withConfig({
-  shouldForwardProp: (prop) => prop !== "isActive", // isActive prop을 DOM으로 전달하지 않음
-})`
-  padding: 10px;
-  background-color: ${(props) => (props.isActive ? "#4caf50" : "#ccc")};
+const DistanceLabel = styled.div`
+  flex: 0 0 auto;
+  font-size: 14px;
+`;
+
+const DistanceToggleButton = styled.button`
+  flex: 0 0 auto;
+
+  width: 24px;
+  height: 24px;
+  padding: 4px 6px;
+  background-color: ${(props) =>
+    // @ts-ignore
+    props.$isActive ? "#4caf50" : "white"};
   color: white;
-  border: none;
+  border: ${(props) =>
+    // @ts-ignore
+    props.$isActive ? "none" : "1px solid #bbb"};
   border-radius: 4px;
   cursor: pointer;
 
   &:hover {
-    background-color: ${(props) => (props.isActive ? "#45a049" : "#bbb")};
+    background-color: ${(props) =>
+      // @ts-ignore
+      props.$isActive ? "#45a049" : "#eee"};
   }
+`;
+
+const DistanceButtonEnabledIcon = styled(IoMdCheckmark)`
+  width: 12px;
+  height: 12px;
+  min-width: 12px;
+  min-height: 12px;
+  transform: translateY(2px);
 `;
 
 const Slider = styled.input`
@@ -242,5 +306,7 @@ const Slider = styled.input`
 
 const DistanceValue = styled.span`
   font-size: 14px;
-  color: ${(props) => (props.disabled ? "#ccc" : "#333")};
+  color: ${(props) =>
+    // @ts-ignore
+    props.$disabled ? "#ccc" : "#333"};
 `;
