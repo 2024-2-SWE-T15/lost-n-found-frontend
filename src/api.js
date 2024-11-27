@@ -63,6 +63,56 @@ export const fetchStrongholdMarkers = async (lat, lng, distance) => {
   }
 };
 
+export const fetchPost = async (postId) => {
+  const response = await api.get("/post", {
+    params: { post_id: postId },
+  });
+
+  console.log("Fetched post:", response.data);
+  return {
+    id: response.data.id,
+    title: response.data.title,
+    description: response.data.description,
+    isLost: response.data.is_lost,
+    photos: response.data.photos,
+    createTime: response.data.create_time,
+    hashtags: response.data.hashtags,
+    nickname: response.data.nickname,
+    coordinates: {
+      lat: response.data.coordinates[0],
+      lng: response.data.coordinates[1],
+    },
+    keptCoordinates: response.data.kept_place?.stronghold?.coordinates
+      ? {
+          lat: response.data.kept_place.stronghold.coordinates[0],
+          lng: response.data.kept_place.stronghold.coordinates[1],
+        }
+      : null,
+  };
+};
+
+export const fetchPostRecommendations = async (postId) => {
+  const response = await api.get("/post/recommand/", {
+    params: { post_id: postId },
+  });
+
+  console.log("Fetched recommendations:", response.data);
+  return {
+    lost: (response.data.lost || []).map((post) => ({
+      id: post.id,
+      title: post.title,
+      hashtags: post.tags,
+      thumbnail: post.thumbnail,
+    })),
+    found: (response.data.found || []).map((post) => ({
+      id: post.id,
+      title: post.title,
+      hashtags: post.tags,
+      thumbnail: post.thumbnail,
+    })),
+  };
+};
+
 export const submitLostItem = async ({
   title,
   coordinates,
