@@ -43,6 +43,34 @@ export const fetchMarkers = async (lat, lng, distance) => {
   }
 };
 
+export const searchPosts = async ({ query, tags, lat, lng, distance }) => {
+  const response = await api.get("/post/search/", {
+    params: {
+      query,
+      tags,
+      coordinates: [lat, lng],
+      distance,
+      limit: 30,
+    },
+    paramsSerializer: {
+      indexes: null,
+    },
+  });
+
+  console.log("Response from API:", response.data);
+  return response.data.map((post) => ({
+    id: post.id,
+    latlng: {
+      lat: post.coordinates[0],
+      lng: post.coordinates[1],
+    },
+    title: post.title,
+    thumbnail: post.thumbnail,
+    hashtags: post.hashtags,
+    createTime: post.create_time,
+  }));
+};
+
 export const fetchStrongholdMarkers = async (lat, lng, distance) => {
   const response = await api.get("/marker/stronghold", {
     params: { lng, lat, distance },

@@ -1,8 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 export const MARKER_TYPE = {
-  // LOST_ITEM: "lost-item", // is it necessary?
-  FOUND_ITEM: "found-item",
+  ITEM: "item",
   STRONGHOLD: "stronghold",
   PINNED: "pinned",
   CLICKED: "clicked",
@@ -15,9 +14,30 @@ const mapSlice = createSlice({
   name: "map",
   initialState: {
     activeMarkerId: null,
+    centerSnapshot: null,
+    levelSnapshot: null,
+    sidebarOffsetSnapshot: null,
     markerMap: {},
   },
   reducers: {
+    recordCenter: (state, action) => {
+      return {
+        ...state,
+        centerSnapshot: { ...action.payload },
+      };
+    },
+    recordLevel: (state, action) => {
+      return {
+        ...state,
+        levelSnapshot: { ...action.payload },
+      };
+    },
+    recordSidebarOffset: (state, action) => {
+      return {
+        ...state,
+        sidebarOffsetSnapshot: { ...action.payload },
+      };
+    },
     setActiveMarkerId: (state, action) => {
       return {
         ...state,

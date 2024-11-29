@@ -181,6 +181,7 @@ const PostDetails = ({ postData }) => {
           {isSdkLoaded && (
             <Map
               center={center}
+              level={3}
               style={{
                 width: "100%",
                 height: "100%",

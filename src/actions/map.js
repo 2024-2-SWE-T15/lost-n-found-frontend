@@ -5,11 +5,56 @@ import {
   SCENE,
 } from "../store";
 import { fetchMarkers, fetchStrongholdMarkers } from "../api";
-import { openSidebar, setActiveMarkerId, setMarkerMap } from "./store";
-import { selectMap, selectScene } from "../selector";
+import {
+  openSidebar,
+  recordCenter,
+  recordLevel,
+  recordSidebarOffset,
+  setActiveMarkerId,
+  setMarkerMap,
+} from "./store";
+import { selectMap, selectScene, selectSidebarAwareCenter } from "../selector";
 
-export const refreshMap = (lat, lng) => async (dispatch, getState) => {
-  const sceneOnDispatch = selectScene(getState());
+import { getSidebarLatLngOffset } from "../utils";
+
+const REFRESH_ON_MOVE_SCENES = [SCENE.INITIAL, SCENE.KEPT_LOCATION_PICKER];
+
+export const mapInitialized = (map) => async (dispatch, getState) => {
+  const center = map.getCenter();
+  dispatch(recordCenter({ lat: center.getLat(), lng: center.getLng() }));
+  dispatch(recordLevel(map.getLevel()));
+  dispatch(recordSidebarOffset(getSidebarLatLngOffset(map.getProjection())));
+
+  const scene = selectScene(getState());
+  if (REFRESH_ON_MOVE_SCENES.includes(scene)) {
+    dispatch(refreshMap());
+  }
+};
+
+export const centerChanged = (map) => async (dispatch, getState) => {
+  const center = map.getCenter();
+  dispatch(recordCenter({ lat: center.getLat(), lng: center.getLng() }));
+
+  const scene = selectScene(getState());
+  if (REFRESH_ON_MOVE_SCENES.includes(scene)) {
+    dispatch(refreshMap());
+  }
+};
+
+export const levelChanged = (map) => async (dispatch, getState) => {
+  dispatch(recordLevel(map.getLevel()));
+  dispatch(recordSidebarOffset(getSidebarLatLngOffset(map.getProjection())));
+
+  const scene = selectScene(getState());
+  if (REFRESH_ON_MOVE_SCENES.includes(scene)) {
+    dispatch(refreshMap());
+  }
+};
+
+export const refreshMap = () => async (dispatch, getState) => {
+  const state = getState();
+  const sceneOnDispatch = selectScene(state);
+  const { lat, lng } = selectSidebarAwareCenter(state);
 
   let newMarkerMap = null;
 
@@ -19,7 +64,7 @@ export const refreshMap = (lat, lng) => async (dispatch, getState) => {
     newMarkerMap = markers.reduce((acc, marker) => {
       acc[marker.id] = {
         latlng: marker.latlng,
-        type: MARKER_TYPE.FOUND_ITEM,
+        type: MARKER_TYPE.ITEM,
         data: marker,
       };
       return acc;

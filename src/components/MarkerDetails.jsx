@@ -1,12 +1,12 @@
 import { CenteredColumn, Column, Row } from "./Flex";
 import styled, { css } from "styled-components";
+import { useEffect, useMemo, useRef } from "react";
 
 import { GoTag } from "react-icons/go";
 import { IoMdTime } from "react-icons/io";
 import { MdNavigateNext } from "react-icons/md";
 import { SIDEBAR_CONTENT_WIDTH_PX } from "./Sidebar";
 import { Spacer } from "./Spacer";
-import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 const THUMBNAIL_SIZE = 80;
@@ -18,8 +18,13 @@ const INFO_LIST_WIDTH =
   THUMBNAIL_INFO_LIST_GAP -
   NEXT_ICON_SIZE;
 
-const MarkerDetails = ({ markerData }) => {
+const MarkerDetails = ({
+  markerData,
+  onHoverChanged = undefined,
+  isActive = false,
+}) => {
   const navigate = useNavigate();
+  const ref = useRef();
 
   const formattedCreateTime = useMemo(() => {
     return new Date(markerData.createTime).toLocaleString("ko-KR");
@@ -33,8 +38,27 @@ const MarkerDetails = ({ markerData }) => {
     return markerData.hashtags.map((tag) => `#${tag}`).join(" ");
   }, [markerData.hashtags]);
 
+  useEffect(() => {
+    const { current: element } = ref;
+    if (isActive && element) {
+      // @ts-ignore
+      element.scrollIntoView({
+        block: "nearest",
+        inline: "nearest",
+        behavior: "smooth",
+      });
+    }
+  }, [isActive]);
+
   return (
-    <Container onClick={() => navigate(`/post/${markerData.id}`)}>
+    <Container
+      ref={ref}
+      // @ts-ignore
+      $isActive={isActive}
+      onMouseEnter={() => onHoverChanged?.(true)}
+      onMouseLeave={() => onHoverChanged?.(false)}
+      onClick={() => navigate(`/post/${markerData.id}`)}
+    >
       {markerData.thumbnail ? (
         <Thumbnail src={markerData.thumbnail} />
       ) : (
@@ -42,7 +66,12 @@ const MarkerDetails = ({ markerData }) => {
       )}
       <Spacer size={THUMBNAIL_INFO_LIST_GAP} />
       <InfoList>
-        <Title>{markerData.title}</Title>
+        <Title
+          // @ts-ignore
+          $isActive={isActive}
+        >
+          {markerData.title}
+        </Title>
         <ExtraInfo>
           <CreatedTimeIcon />
           <ExtraInfoText>{formattedCreateTime}</ExtraInfoText>
@@ -61,12 +90,15 @@ const Container = styled(Row)`
   width: 100%;
   height: 100px;
   align-items: center;
-  padding: 9px 0; // 10px - 1px (border)
-  border-top: 1px solid #eee;
+  padding: 9px 0 9px 8px; // 10px - 1px (border)
   border-bottom: 1px solid #eee;
 
   user-select: none;
   cursor: pointer;
+
+  ${(props) =>
+    // @ts-ignore
+    props.$isActive && "background-color: #fff7f7;"}
 `;
 
 const Thumbnail = styled.img`
@@ -103,6 +135,10 @@ const Title = styled.div`
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
+
+  ${(props) =>
+    // @ts-ignore
+    props.$isActive && "color: firebrick;"}
 `;
 
 const ExtraInfo = styled(Row)`

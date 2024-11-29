@@ -23,6 +23,8 @@ import {
   selectScene,
 } from "../selector";
 
+import { refreshMap } from "./map";
+
 const enterForm = (dispatch, getState, isLost) => {
   const { activeMarkerId, markerMap: oldMarkerMap } = selectMap(getState());
   const newMarkerMap = {
@@ -58,6 +60,7 @@ export const goBackOnForm = () => (dispatch, getState) => {
       dispatch(setMarkerMap({}));
       dispatch(setActiveMarkerId(null));
       dispatch(setScene(SCENE.INITIAL));
+      dispatch(refreshMap());
 
       break;
     }
@@ -104,6 +107,7 @@ export const submitLostForm = () => async (_, getState) => {
 
 export const submitFoundForm = () => (dispatch) => {
   dispatch(setScene(SCENE.KEPT_LOCATION_PICKER));
+  dispatch(refreshMap());
 };
 
 export const confirmFoundLocation = () => async (_, getState) => {

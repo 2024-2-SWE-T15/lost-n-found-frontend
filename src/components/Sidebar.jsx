@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useDispatch, useSelector } from "react-redux";
 
+import { Column } from "./Flex";
 import { selectSidebar } from "../selector";
 import styled from "styled-components";
 import { toggleSidebar } from "../actions";
@@ -38,7 +39,9 @@ const SidebarContainer = styled.div`
   z-index: 900;
 `;
 
-const Content = styled.div`
+const Content = styled(Column)`
+  width: 100%;
+  height: 100%;
   padding: ${SIDEBAR_PADDING_PX}px;
 `;
 

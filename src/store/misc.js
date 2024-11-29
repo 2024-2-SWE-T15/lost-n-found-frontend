@@ -27,6 +27,20 @@ const profileMenuSlice = createSlice({
   },
 });
 
+const filterSlice = createSlice({
+  name: "filter",
+  initialState: {
+    value: null,
+  },
+  reducers: {
+    clear: () => ({ value: null }),
+    apply: (_, action) => ({ value: { ...action.payload } }),
+  },
+  selectors: {
+    selectFilter: (state) => state.value,
+  },
+});
+
 const formDataSlice = createSlice({
   name: "formData",
   initialState: {},
@@ -68,4 +82,4 @@ const sidebarSlice = createSlice({
   },
 });
 
-export { formDataSlice, profileMenuSlice, sidebarSlice };
+export { filterSlice, formDataSlice, profileMenuSlice, sidebarSlice };
