@@ -48,6 +48,7 @@ const Container = styled.a`
 
 const ThumnailAreaStyle = css`
   flex: 0 0 auto;
+  width: 100%;
   aspect-ratio: 1 / 1;
   border-radius: 8px;
 `;
