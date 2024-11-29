@@ -102,7 +102,6 @@ export const fetchPost = async (postId) => {
     title: response.data.title,
     description: response.data.description,
     isLost: response.data.is_lost,
-    photos: response.data.photos,
     createTime: response.data.create_time,
     hashtags: response.data.hashtags,
     nickname: response.data.nickname,
@@ -117,6 +116,12 @@ export const fetchPost = async (postId) => {
         }
       : null,
   };
+};
+
+export const fetchPostPhotos = async (postId) => {
+  const response = await api.get(`/post/${postId}/image/`);
+  console.log("Fetched post photos:", response.data);
+  return response.data;
 };
 
 export const fetchPostRecommendations = async (postId) => {

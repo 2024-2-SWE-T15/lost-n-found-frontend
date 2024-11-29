@@ -1,5 +1,6 @@
 import { CenteredColumn, CenteredRow, Column, Row } from "./Flex";
 import { Map, MapMarker } from "react-kakao-maps-sdk";
+import { fetchPostPhotos, fetchPostRecommendations } from "../api";
 import styled, { css } from "styled-components";
 import { useEffect, useMemo, useState } from "react";
 
@@ -13,7 +14,6 @@ import RecommendedPostSlot from "./RecommendedPostSlot";
 // @ts-ignore
 import RedMarkerSrc from "../assets/marker_img/marker_red.png";
 import { Spacer } from "./Spacer";
-import { fetchPostRecommendations } from "../api";
 import { useKakaoLoader } from "../hooks/useKakaoLoader";
 
 const ADDRESS_CANNOT_BE_DETERMINED =
@@ -58,6 +58,7 @@ const isSameCoordinates = (coord1, coord2) => {
 
 const PostDetails = ({ postData }) => {
   const isSdkLoaded = useKakaoLoader();
+  const [photos, setPhotos] = useState(null);
   const [coordAddress, setCoordAddress] = useState(null);
   const [keptCoordAddress, setKeptCoordAddress] = useState(null);
   const [recommendation, setRecommendation] = useState(null);
@@ -73,6 +74,16 @@ const PostDetails = ({ postData }) => {
       return postData.hashtags.map((tag) => `#${tag}`).join(" ");
     }
   }, [postData.hashtags]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      fetchPostPhotos(postData.id)
+        .then(setPhotos)
+        .catch(() => setPhotos([]));
+    }, 0);
+
+    return () => clearTimeout(timeout);
+  }, [postData.id]);
 
   useEffect(() => {
     if (!isSdkLoaded) return;
@@ -131,10 +142,12 @@ const PostDetails = ({ postData }) => {
       <Title>{postData.isLost ? "분실물" : "습득물"} 상세 정보</Title>
       <Spacer size={20} />
       <InfoSection>
-        {postData.photos?.[0] ? (
-          <Thumbnail src={postData.photos[0]} />
+        {photos?.[0] ? (
+          <Thumbnail src={photos[0]} />
         ) : (
-          <NoThumbnail>이미지 없음</NoThumbnail>
+          <NoThumbnail>
+            {photos === null ? "로딩 중..." : "이미지 없음"}
+          </NoThumbnail>
         )}
         <InfoList>
           <ItemTitle>{postData.title}</ItemTitle>
