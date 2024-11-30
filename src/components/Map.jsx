@@ -23,12 +23,20 @@ export default function KakaoMap() {
   const { activeMarkerId, markerMap } = useSelector(selectMap);
   const isSdkLoaded = useKakaoLoader();
   const [map, setMap] = useState(null);
+  const [centerChangeEvent, triggerCenterChange] = useState(null);
 
   useEffect(() => {
     if (map) {
       dispatch(mapInitialized(map));
     }
   }, [map, dispatch]);
+
+  useEffect(() => {
+    if (centerChangeEvent && map) {
+      const timeout = setTimeout(() => dispatch(centerChanged(map)), 300);
+      return () => clearTimeout(timeout);
+    }
+  }, [centerChangeEvent, map, dispatch]);
 
   if (!isSdkLoaded) {
     return (
@@ -52,12 +60,8 @@ export default function KakaoMap() {
           const latLng = mouseEvent.latLng;
           dispatch(clickMap(latLng.getLat(), latLng.getLng()));
         }}
-        onCenterChanged={(map) => {
-          dispatch(centerChanged(map));
-        }}
-        onZoomChanged={(map) => {
-          dispatch(levelChanged(map));
-        }}
+        onCenterChanged={() => triggerCenterChange({})}
+        onZoomChanged={(map) => dispatch(levelChanged(map))}
       >
         {Object.entries(markerMap)
           .filter(([, marker]) => marker !== null && marker !== undefined)
