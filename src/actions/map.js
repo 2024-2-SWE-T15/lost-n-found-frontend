@@ -41,14 +41,10 @@ export const centerChanged = (map) => async (dispatch, getState) => {
   }
 };
 
-export const levelChanged = (map) => async (dispatch, getState) => {
+export const levelChanged = (map) => async (dispatch) => {
   dispatch(recordLevel(map.getLevel()));
   dispatch(recordSidebarOffset(getSidebarLatLngOffset(map.getProjection())));
-
-  const scene = selectScene(getState());
-  if (REFRESH_ON_MOVE_SCENES.includes(scene)) {
-    dispatch(refreshMap());
-  }
+  // no need to refresh map; centerChanged will be called after levelChanged
 };
 
 export const refreshMap = () => async (dispatch, getState) => {
