@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "https://adapted-dingo-summary.ngrok-free.app";
+const BASE_URL = "https://inspired-terrapin-organic.ngrok-free.app";
 
 const api = axios.create({
   baseURL: BASE_URL,
